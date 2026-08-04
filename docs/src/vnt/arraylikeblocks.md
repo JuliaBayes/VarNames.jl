@@ -23,7 +23,7 @@ but we incur all the costs associated with the use of a `Dict`, as described bef
 With a `VarNamedTuple`, we cannot store this directly:
 
 ```julia
-vnt.data.x = ... # some array
+vnt.data.x = some_array
 vnt.data.x[1:3] = Dirichlet(ones(3))  # will error
 ```
 
@@ -31,7 +31,7 @@ because `Dirichlet` is not an array, and `setindex!` will fail.
 Nor can we write
 
 ```julia
-vnt.data.x = ... # some array
+vnt.data.x = some_array
 vnt.data.x[1:3] .= Dirichlet(ones(3))
 ```
 
