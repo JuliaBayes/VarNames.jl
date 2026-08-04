@@ -14,4 +14,13 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Varnames = "09a315b2-63fc-4165-8d7f-d59368e770cc"
 
 [compat]
+Aqua = "0.8"
+BangBang = "0.4"
+Combinatorics = "1"
+ComponentArrays = "0.15"
 DimensionalData = "0.30"
+Distributions = "0.25"
+InvertedIndices = "1"
+JET = "0.12"
+OffsetArrays = "1"
+OrderedCollections = "1, 2"
