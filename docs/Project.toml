@@ -1,0 +1,10 @@
+[deps]
+DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+Varnames = "09a315b2-63fc-4165-8d7f-d59368e770cc"
+
+[compat]
+DimensionalData = "0.30"
+Documenter = "1"
+OrderedCollections = "1, 2"

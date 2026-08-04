@@ -70,7 +70,7 @@ export VarNamedTuple,
     SkipTemplate,
     @vnt
 
-using BangBang: push!!, empty!!
-export push!!, empty!!
+using BangBang: push!!, empty!!, setindex!!
+export push!!, empty!!, setindex!!
 
 end # module Varnames
