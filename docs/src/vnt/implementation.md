@@ -21,7 +21,7 @@ Indeed, `BangBang.setindex!!(vnt, 1.0, @varname(x[1].a))` directly calls the abo
 If a template is provided, it must be for the entire structure being created, that is, the template should be the shape of `vnt`.
 
 !!! info
-    
+
     When we called `templated_setindex!!`, we said that the template should be for the top-level symbol, i.e. `x`.
     It seems like we are introducing an inconsistency here, since the template above would be for the entire structure.
     That is why `templated_setindex!!` does not pass the template as-is; it wraps the template in one level of `SkipTemplate{1}(template)`, which effectively means 'don't use a template for the first level, then use it for the next'.
@@ -112,11 +112,13 @@ Some explanatory notes:
  1. The whole purpose of the function is to ensure that `value` is something where you can index into with `optic` to get `leaf_value`.
 
  2. Since `sub_value` is also created with the same function, that means it must be something you can index into with `child_optic` to get `leaf_value`.
+
  3. `empty_value` needs to be something that can hold `sub_value` at `this_optic`. We don't yet insert the data. However, to ensure type stability, we should *instantiate* the PA with the correct element type: in this case that's just `typeof(sub_value)`. (If we don't use the correct element type, the subsequent call to `setindex!!` will have to change the element type of the PA.)
+
  4. `value` is then created by putting `sub_value` into `empty_value` at `this_optic`.
 
 !!! info
-    
+
     Regarding point (3): we haven't yet covered `ArrayLikeBlock`s (that will be on the next page). If `sub_value` is something that would be stored as an `ArrayLikeBlock`, we need to instantiate `empty_value` with `typeof(ArrayLikeBlock(sub_value))` instead of `typeof(sub_value)`, again for type stability reasons. If you are not familiar with this, don't worry about it for now.
 
 ## Multi-indices

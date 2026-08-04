@@ -6,6 +6,7 @@ Consider, for example, a case where `x[1:3]` has a `Dirichlet` prior.
 With a `Dict{VarName,Distribution}`, we can do this:
 
 !!! note
+
     We'll make a 'fake' Dirichlet struct here to avoid importing Distributions.
 
 ```@example 1
@@ -57,9 +58,7 @@ Under the hood, `templated_setindex!!` will automatically wrap values in `ArrayL
 
 ```@example 1
 x = zeros(5)
-vnt = templated_setindex!!(
-    VarNamedTuple(), Dirichlet(ones(3)), @varname(x[1:3]), x
-)
+vnt = templated_setindex!!(VarNamedTuple(), Dirichlet(ones(3)), @varname(x[1:3]), x)
 ```
 
 You can access the value again as long as you refer to the full range:
@@ -71,7 +70,7 @@ vnt[@varname(x[1:3])]
 Because we provided template information, you can access this via any other combination of indexing, as long as it refers to all three indices:
 
 ```@example 1
-vnt[@varname(x[begin:(end - 2)])]
+vnt[@varname(x[begin:(end-2)])]
 ```
 
 However, if you try to access only part of the block, you will get an error:

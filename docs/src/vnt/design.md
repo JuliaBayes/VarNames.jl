@@ -42,7 +42,7 @@ This is accomplished using a `PartialArray`, which is a wrapper around an `Abstr
 The array type and size of the mask is always the same as the data array (this is done using `Base.similar`).
 
 !!! info
-    
+
     Currently this is not enforced in an inner constructor, because that sometimes leads to extra allocations. It would be nice to investigate if this invariant can be enforced.
 
 If `pa.mask[i]` is `true`, then `pa.data[i]` has been set; otherwise, `pa.data[i]` may contain some value, but it is not valid to index into that part of the array.
@@ -162,7 +162,7 @@ From this example, one can see that getting data from a `VarNamedTuple` is as ty
   - All indexing is done into `PartialArray`s: as long as indexing into the underlying data is type-stable (i.e., the element type of the data array is concrete), indexing into the `PartialArray` is type-stable as well.
 
 !!! info
-    
+
     In fact, the underlying data need not all have the same (concrete) type: all that is needed is that the _unmasked_ elements have the same (concrete) type. The function `_concretise_eltype!!` is an attempt to force this to be the case: if the element type is abstract, but all the set elements have the same concrete type, the entire data array's element type will be changed to that concrete type (with junk in the unset elements).
 
 **One immediate question here is: how do we know what kind of array the `PartialArray` should use for its data and mask?**
@@ -282,5 +282,5 @@ getindex(vnt, @varname(x[3]))
 ```
 
 !!! info
-    
+
     Note that support for such arrays is contingent on the provider of the array type, as well as BangBang.jl. There may be bugs that prevent some array types from fully working correctly. For example, `BangBang.setindex!!` does not accept keyword arguments, which precludes the use of keyword indices in `DimArray`s. However, Varnames itself does not inherently prevent you from using such arrays. We would definitely like to fix upstream issues like these, but we don't always have the time to do so: help is *very* greatly appreciated!

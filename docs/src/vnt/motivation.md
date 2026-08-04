@@ -3,6 +3,7 @@
 The original design for `VarNamedTuple` came from probabilistic programming with DynamicPPL.jl, and so is described here with that context.
 
 !!! note
+
     The DynamicPPL code samples on this page are not executed.
 
 When executing a DynamicPPL model, it is very often necessary to store information about the random variables in the model.
@@ -166,6 +167,7 @@ In summary, we want a data structure that:
  1. Can store arbitrary `VarName`s as keys, with arbitrary values.
 
  2. Is performant and as type stable where possible. In particular, property access should always be type-stable, and indexing should be type-stable as long as the indexed values are homogeneous in type.
+
  3. Is constructive.
 
 `VarNamedTuple` generally solves these issues, with a few very niche edge cases that will be discussed at the very end.
