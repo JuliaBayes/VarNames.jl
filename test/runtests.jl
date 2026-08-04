@@ -1,6 +1,7 @@
 using Test
 
 @testset "Varnames.jl" begin
+    include("Aqua.jl")
     include("varname/optic.jl")
     include("varname/varname.jl")
     include("varname/subsumes.jl")
