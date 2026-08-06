@@ -1,7 +1,7 @@
 module VarNamePrefixTests
 
 using Test
-using Varnames
+using VarNames
 
 @testset "varname/prefix.jl" verbose = true begin
     @testset "basic cases" begin

@@ -1,5 +1,5 @@
 """
-VarnamesDistributionsExt
+VarNamesDistributionsExt
 
 This extension provides extra methods for `hasvalue` and `getvalue`,
 specifically, to deal with cases where a dictionary may not have mappings for
@@ -31,9 +31,9 @@ of `x` is lost once a `Chains` object has been created. Thus, reconstructing
 the original values of `x` requires the use of the three-argument methods in
 this extension.
 """
-module VarnamesDistributionsExt
+module VarNamesDistributionsExt
 
-using Varnames
+using VarNames
 using Distributions: Distributions, Distribution, LKJCholesky
 using Accessors: Accessors
 using LinearAlgebra: Cholesky, LowerTriangular, UpperTriangular
@@ -133,7 +133,7 @@ ERROR: only partial values for `x` found in the dictionary provided
 [...]
 ```
 """
-function Varnames.hasvalue(
+function VarNames.hasvalue(
     vals::NamedTuple,
     vn::VarName,
     dist::Distributions.Distribution;
@@ -143,7 +143,7 @@ function Varnames.hasvalue(
     # defer to the simpler `hasvalue(vals, vn)`.
     return hasvalue(vals, vn)
 end
-function Varnames.hasvalue(
+function VarNames.hasvalue(
     vals::AbstractDict,
     vn::VarName,
     dist::Distributions.Distribution;
@@ -152,7 +152,7 @@ function Varnames.hasvalue(
     @warn "`hasvalue(vals, vn, dist)` is not implemented for $(typeof(dist)); falling back to `hasvalue(vals, vn)`."
     return hasvalue(vals, vn)
 end
-function Varnames.hasvalue(
+function VarNames.hasvalue(
     vals::AbstractDict,
     vn::VarName,
     ::Distributions.UnivariateDistribution;
@@ -163,7 +163,7 @@ function Varnames.hasvalue(
     # the user handle it.
     return hasvalue(vals, vn)
 end
-function Varnames.hasvalue(
+function VarNames.hasvalue(
     vals::AbstractDict{<:VarName},
     vn::VarName{sym},
     dist::Union{
@@ -197,7 +197,7 @@ function Varnames.hasvalue(
 end
 
 """
-    Varnames.getvalue(
+    VarNames.getvalue(
         vals::Union{AbstractDict,NamedTuple},
         vn::VarName,
         dist::Distribution
@@ -231,12 +231,12 @@ ERROR: `x` was not found in the dictionary provided
 [...]
 ```
 """
-function Varnames.getvalue(vals::NamedTuple, vn::VarName, dist::Distributions.Distribution)
+function VarNames.getvalue(vals::NamedTuple, vn::VarName, dist::Distributions.Distribution)
     # NamedTuples can't have such complicated hierarchies, so it's safe to
     # defer to the simpler `getvalue(vals, vn)`.
     return getvalue(vals, vn)
 end
-function Varnames.getvalue(
+function VarNames.getvalue(
     vals::AbstractDict,
     vn::VarName,
     dist::Distributions.Distribution;
@@ -244,7 +244,7 @@ function Varnames.getvalue(
     @warn "`getvalue(vals, vn, dist)` is not implemented for $(typeof(dist)); falling back to `getvalue(vals, vn)`."
     return getvalue(vals, vn)
 end
-function Varnames.getvalue(
+function VarNames.getvalue(
     vals::AbstractDict,
     vn::VarName,
     ::Distributions.UnivariateDistribution;
@@ -254,7 +254,7 @@ function Varnames.getvalue(
     # the user handle it.
     return getvalue(vals, vn)
 end
-function Varnames.getvalue(
+function VarNames.getvalue(
     vals::AbstractDict{<:VarName},
     vn::VarName{sym},
     dist::Union{
@@ -297,16 +297,16 @@ end
 #
 # NOTE(penelopeysm) See https://github.com/TuringLang/DynamicPPL.jl/issues/1262 for
 # explanation of these methods.
-Varnames.hasvalue(vals::VarNamedTuple, vn::VarName, ::Distribution) = haskey(vals, vn)
-Varnames.getvalue(vals::VarNamedTuple, vn::VarName, ::Distribution) = vals[vn]
-function Varnames.hasvalue(vnt::VarNamedTuple, vn::VarName, dist::LKJCholesky)
+VarNames.hasvalue(vals::VarNamedTuple, vn::VarName, ::Distribution) = haskey(vals, vn)
+VarNames.getvalue(vals::VarNamedTuple, vn::VarName, ::Distribution) = vals[vn]
+function VarNames.hasvalue(vnt::VarNamedTuple, vn::VarName, dist::LKJCholesky)
     if !haskey(vnt, vn)
         # Can't even find the parent VarName, there is no hope.
         return false
     end
     # Note that _getindex_optic, rather than Base.getindex, skips the need to denseify
     # PartialArrays.
-    val = Varnames._getindex_optic(vnt, vn)
+    val = VarNames._getindex_optic(vnt, vn)
     if !(val isa VarNamedTuple || val isa PartialArray)
         # There is _a_ value. Whether it's the right kind, we do not know, but returning
         # true is no worse than `hasvalue` returning true for e.g. UnivariateDistributions
@@ -319,15 +319,15 @@ function Varnames.hasvalue(vnt::VarNamedTuple, vn::VarName, dist::LKJCholesky)
     for k in keys(val)
         # VarNamedTuples have VarNames as keys, PartialArrays have Index optics.
         subvn = val isa VarNamedTuple ? prefix(k, vn) : append_optic(vn, k)
-        dval[subvn] = Varnames._getindex_optic(val, k, subvn)
+        dval[subvn] = VarNames._getindex_optic(val, k, subvn)
     end
     return hasvalue(dval, vn, dist)
 end
 
-function Varnames.getvalue(vnt::VarNamedTuple, vn::VarName, dist::LKJCholesky)
+function VarNames.getvalue(vnt::VarNamedTuple, vn::VarName, dist::LKJCholesky)
     # Note that _getindex_optic, rather than Base.getindex, skips the need to denseify
     # PartialArrays.
-    val = Varnames._getindex_optic(vnt, vn)
+    val = VarNames._getindex_optic(vnt, vn)
     if !(val isa VarNamedTuple || val isa PartialArray)
         return val
     end
@@ -337,7 +337,7 @@ function Varnames.getvalue(vnt::VarNamedTuple, vn::VarName, dist::LKJCholesky)
     for k in keys(val)
         # VarNamedTuples have VarNames as keys, PartialArrays have Index optics.
         subvn = val isa VarNamedTuple ? prefix(k, vn) : append_optic(vn, k)
-        dval[subvn] = Varnames._getindex_optic(val, k, subvn)
+        dval[subvn] = VarNames._getindex_optic(val, k, subvn)
     end
     return getvalue(dval, vn, dist)
 end

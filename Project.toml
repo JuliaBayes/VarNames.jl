@@ -1,4 +1,4 @@
-name = "Varnames"
+name = "VarNames"
 uuid = "09a315b2-63fc-4165-8d7f-d59368e770cc"
 version = "0.1.0"
 authors = ["Penelope Yong <penelopeysm@gmail.com>", "Markus Hauru <markus@mhauru.org>"]
@@ -16,8 +16,8 @@ ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 
 [extensions]
-VarnamesDistributionsExt = ["Distributions", "Accessors", "LinearAlgebra"]
-VarnamesComponentArraysExt = ["ComponentArrays"]
+VarNamesDistributionsExt = ["Distributions", "Accessors", "LinearAlgebra"]
+VarNamesComponentArraysExt = ["ComponentArrays"]
 
 [compat]
 Accessors = "0.1"

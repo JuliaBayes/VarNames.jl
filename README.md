@@ -1,4 +1,4 @@
-# Varnames.jl
+# VarNames.jl
 
 This package provides two types, `VarName` and `VarNamedTuple`, along with associated functionality.
 

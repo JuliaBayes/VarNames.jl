@@ -2,7 +2,7 @@ module OpticTests
 
 using Test
 using DimensionalData: DimensionalData as DD
-using Varnames
+using VarNames
 
 @testset "varname/optic.jl" verbose = true begin
     @testset "pretty-printing" begin
@@ -361,7 +361,7 @@ using Varnames
             end
 
             # NOTE(penelopeysm): This SHOULD really mutate. It is not an error with
-            # Varnames, though, it is an interface problem between BangBang and
+            # VarNames, though, it is an interface problem between BangBang and
             # DimensionalData (essentially BangBang can't detect that DimArray is mutable).
             # 
             # To be precise, the test fails because BangBang thinks that `DD.Y(1)` is an

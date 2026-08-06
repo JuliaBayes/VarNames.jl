@@ -1,6 +1,6 @@
 using Test
 
-@testset "Varnames.jl" begin
+@testset "VarNames.jl" begin
     include("Aqua.jl")
     include("varname/optic.jl")
     include("varname/varname.jl")

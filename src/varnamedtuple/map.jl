@@ -56,7 +56,7 @@ Apply `func` to the subdata at `name` in `vnt`, and set the result back at `name
 Like `map_values!!`, but only for a single `VarName`.
 
 ```jldoctest
-julia> using Varnames: VarNamedTuple, setindex!!, apply!!
+julia> using VarNames: VarNamedTuple, setindex!!, apply!!
 
 julia> vnt = VarNamedTuple()
 VarNamedTuple()

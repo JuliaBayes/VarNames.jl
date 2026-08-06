@@ -6,7 +6,7 @@ Construct a `VarNamedTuple` from a block of assignments. Each assignment should 
 example:
 
 ```jldoctest
-julia> using Varnames
+julia> using VarNames
 
 julia> @vnt begin
            a := 1
@@ -19,7 +19,7 @@ VarNamedTuple
 
 You can set entirely arbitrary variables:
 
-```jldoctest; setup=:(using Varnames)
+```jldoctest; setup=:(using VarNames)
 julia> @vnt begin
            a.b.c.d.e := "hello"
        end
@@ -47,7 +47,7 @@ accepts whitespace-separated arguments, which must either be
 
 For example:
 
-```jldoctest; setup=:(using Varnames)
+```jldoctest; setup=:(using VarNames)
 julia> x = zeros(5); outside_y = zeros(3, 3);
 
 julia> @vnt begin

@@ -1,7 +1,7 @@
 module VarNameTests
 
 using Test
-using Varnames
+using VarNames
 using JET: @test_call
 
 @testset "varname/varname.jl" verbose = true begin

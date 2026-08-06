@@ -10,7 +10,7 @@ With a `Dict{VarName,Distribution}`, we can do this:
     We'll make a 'fake' Dirichlet struct here to avoid importing Distributions.
 
 ```@example 1
-using Varnames
+using VarNames
 
 struct Dirichlet{T}
     α::Vector{T}
@@ -42,7 +42,7 @@ The current solution to this is to use `ArrayLikeBlock`s, which are thin wrapper
 The second and third arguments here are the indices (positional and keyword) used to set the value, and the fourth argument is the size of the block.
 
 ```@example 1
-using Varnames: ArrayLikeBlock
+using VarNames: ArrayLikeBlock
 
 alb = ArrayLikeBlock(Dirichlet(ones(3)), 1:3, (;), (3,))
 ```

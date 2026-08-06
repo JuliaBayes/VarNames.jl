@@ -264,7 +264,7 @@ throw an `ArgumentError`.
 # Examples
 
 ```jldoctest
-julia> using Varnames, BangBang
+julia> using VarNames, BangBang
 
 julia> vnt = VarNamedTuple(); vnt = setindex!!(vnt, 10, @varname(x))
 VarNamedTuple

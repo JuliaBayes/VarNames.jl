@@ -2,12 +2,12 @@ using Pkg: Pkg
 Pkg.develop(Pkg.PackageSpec(; path=dirname(@__DIR__)))
 
 using Documenter
-using Varnames
+using VarNames
 
 makedocs(;
-    sitename="Varnames.jl",
+    sitename="VarNames.jl",
     format=Documenter.HTML(),
-    modules=[Varnames],
+    modules=[VarNames],
     pages=[
         "index.md",
         "varname.md",
@@ -26,7 +26,7 @@ makedocs(;
 )
 
 Documenter.deploydocs(;
-    repo="github.com/penelopeysm/Varnames.jl",
+    repo="github.com/penelopeysm/VarNames.jl",
     target="build",
     push_preview=true,
 )

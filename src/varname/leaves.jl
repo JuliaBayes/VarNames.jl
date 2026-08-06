@@ -6,7 +6,7 @@ Return an iterator over all varnames that are represented by `vn` on `val`.
 
 # Examples
 ```jldoctest
-julia> using Varnames: varname_leaves
+julia> using VarNames: varname_leaves
 
 julia> foreach(println, varname_leaves(@varname(x), rand(2)))
 x[1]
@@ -75,7 +75,7 @@ Return an iterator over all varname-value pairs that are represented by `vn` on 
 
 # Examples
 ```jldoctest varname-and-value-leaves
-julia> using Varnames: varname_and_value_leaves
+julia> using VarNames: varname_and_value_leaves
 
 julia> foreach(println, varname_and_value_leaves(@varname(x), 1:2))
 (x[1], 1)
@@ -141,7 +141,7 @@ See also: [`varname_and_value_leaves(vn::VarName, x)`](@ref).
 
 # Examples
 ```jldoctest varname-and-value-leaves-container
-julia> using Varnames: varname_and_value_leaves
+julia> using VarNames: varname_and_value_leaves
 
 julia> using OrderedCollections: OrderedDict
 

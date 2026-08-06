@@ -50,7 +50,7 @@ If `pa.mask[i]` is `true`, then `pa.data[i]` has been set; otherwise, `pa.data[i
 Here is an example:
 
 ```@example 1
-using Varnames: PartialArray
+using VarNames: PartialArray
 
 data = randn(3)
 mask = similar(data, Bool)
@@ -58,11 +58,11 @@ fill!(mask, false)
 pa = PartialArray(data, mask)
 ```
 
-The main way of interacting with a `PartialArray` is to use `BangBang.setindex!!` (which `Varnames` reexports).
+The main way of interacting with a `PartialArray` is to use `BangBang.setindex!!` (which `VarNames` reexports).
 This sets one or more elements of the `PartialArray`'s data, and marks the corresponding elements in the mask as `true`.
 
 ```@example 1
-using Varnames: setindex!!
+using VarNames: setindex!!
 
 setindex!!(pa, 12.0, 2)
 pa.data, pa.mask
@@ -124,7 +124,7 @@ where `_` indicates masked elements in a `PartialArray`.
 To demonstrate:
 
 ```@example 1
-using Varnames
+using VarNames
 
 vnt = VarNamedTuple()
 vnt = setindex!!(vnt, 1.0, @varname(x[1].a))
@@ -184,7 +184,7 @@ vnt.data.y.data.b.data
 ```
 
 So, these `PartialArray`s are backed by something called `GrowableArray`.
-A `GrowableArray` is an array type, defined in Varnames, that can grow in size as needed when `setindex!!` is called with indices outside of its current bounds (with other arrays that would error).
+A `GrowableArray` is an array type, defined in VarNames, that can grow in size as needed when `setindex!!` is called with indices outside of its current bounds (with other arrays that would error).
 The reason for such an array type is that you may want to do something like
 
 ```@example 1
@@ -236,7 +236,7 @@ At a low level, this is done using the [`templated_setindex!!`](@ref) function, 
 For example, the linear-indexing example above now works if you tell the function that `x` is a 2-by-2 matrix.
 
 ```@example 1
-using Varnames: templated_setindex!!
+using VarNames: templated_setindex!!
 
 x = zeros(2, 2)
 vnt = VarNamedTuple()
@@ -283,4 +283,4 @@ getindex(vnt, @varname(x[3]))
 
 !!! info
 
-    Note that support for such arrays is contingent on the provider of the array type, as well as BangBang.jl. There may be bugs that prevent some array types from fully working correctly. For example, `BangBang.setindex!!` does not accept keyword arguments, which precludes the use of keyword indices in `DimArray`s. However, Varnames itself does not inherently prevent you from using such arrays. We would definitely like to fix upstream issues like these, but we don't always have the time to do so: help is *very* greatly appreciated!
+    Note that support for such arrays is contingent on the provider of the array type, as well as BangBang.jl. There may be bugs that prevent some array types from fully working correctly. For example, `BangBang.setindex!!` does not accept keyword arguments, which precludes the use of keyword indices in `DimArray`s. However, VarNames itself does not inherently prevent you from using such arrays. We would definitely like to fix upstream issues like these, but we don't always have the time to do so: help is *very* greatly appreciated!

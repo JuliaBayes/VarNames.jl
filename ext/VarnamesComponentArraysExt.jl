@@ -1,7 +1,7 @@
-module VarnamesComponentArraysExt
+module VarNamesComponentArraysExt
 
-using Varnames
-using Varnames:
+using VarNames
+using VarNames:
     PartialArray,
     AllowAll,
     SetPermissions,
@@ -21,7 +21,7 @@ function _property_to_index(template::ComponentVector, optic::Property{S}) where
     return Index((idx,), NamedTuple(), optic.child)
 end
 
-function Varnames.make_leaf(value, optic::Property{S}, template::ComponentVector) where {S}
+function VarNames.make_leaf(value, optic::Property{S}, template::ComponentVector) where {S}
     return if optic.child isa Iden
         index_optic = _property_to_index(template, optic)
         make_leaf(value, index_optic, template)
@@ -31,7 +31,7 @@ function Varnames.make_leaf(value, optic::Property{S}, template::ComponentVector
         # first index into `x.a` to get the slice of the ComponentArray. The easiest way to
         # handle this is to call the default method.
         invoke(
-            Varnames.make_leaf,
+            VarNames.make_leaf,
             Tuple{Any,Property{S},AbstractArray},
             value,
             optic,
@@ -40,7 +40,7 @@ function Varnames.make_leaf(value, optic::Property{S}, template::ComponentVector
     end
 end
 
-function Varnames._setindex_optic!!(
+function VarNames._setindex_optic!!(
     pa::PartialArray{<:Any,<:Any,<:ComponentVector},
     value,
     optic::Property{S},
@@ -51,7 +51,7 @@ function Varnames._setindex_optic!!(
     return _setindex_optic!!(pa, value, index_optic, template, permissions)
 end
 
-function Varnames._getindex_optic(
+function VarNames._getindex_optic(
     pa::PartialArray{<:Any,<:Any,<:ComponentVector},
     optic::Property{S},
     orig_vn,

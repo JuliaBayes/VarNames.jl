@@ -9,7 +9,7 @@ Here, `x` is the symbol, and `.a[1]` is the optic.
 VarNames can be created using the `@varname` macro:
 
 ```@example vn
-using Varnames
+using VarNames
 
 vn = @varname(x.a[1])
 ```
@@ -39,7 +39,7 @@ For example, `x[end]` refers to the last element of `x`; but we don't know what 
 Specifically, `begin` and `end` symbols in indices are treated as dynamic indices.
 This is also true for any expression that contains `begin` or `end`, such as `end-1` or `1:3:end`.
 
-Dynamic indices are represented using an internal type, `Varnames.DynamicIndex`.
+Dynamic indices are represented using an internal type, `VarNames.DynamicIndex`.
 
 ```@example vn
 vn_dyn = @varname(x[1:2:end])
@@ -69,7 +69,7 @@ concretize_top_level
 
 ## Optics
 
-The optics used in Varnames.jl are represented as a linked list.
+The optics used in VarNames.jl are represented as a linked list.
 For example, the optic `.a[1]` is a `Property` optic that contains an `Index` optic as its child.
 That means that the 'elements' of the linked list can be read from left-to-right:
 
@@ -112,7 +112,7 @@ optic = @opticof(_.a[2])
 optic(data)
 ```
 
-You can set values using `Accessors.set` (which Varnames re-exports).
+You can set values using `Accessors.set` (which VarNames re-exports).
 Note, though, that this will not mutate the original value.
 Furthermore, you cannot use the handy macros like `Accessors.@set`, since those will use the
 optics from Accessors.jl.

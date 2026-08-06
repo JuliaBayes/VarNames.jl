@@ -1,4 +1,4 @@
-module Varnames
+module VarNames
 
 include("varname/optic.jl")
 include("varname/varname.jl")
@@ -73,4 +73,4 @@ export VarNamedTuple,
 using BangBang: push!!, empty!!, setindex!!
 export push!!, empty!!, setindex!!
 
-end # module Varnames
+end # module VarNames

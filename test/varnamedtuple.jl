@@ -3,8 +3,8 @@ module VarNamedTupleTests
 using Combinatorics: Combinatorics
 using OrderedCollections: OrderedDict
 using Test: @inferred, @test, @test_throws, @testset, @test_broken, @test_logs
-using Varnames
-using Varnames:
+using VarNames
+using VarNames:
     PartialArray,
     ArrayLikeBlock,
     GrowableArray,

@@ -1,6 +1,6 @@
 module VarNameLeavesTests
 
-using Varnames
+using VarNames
 using Test
 using LinearAlgebra: LowerTriangular, UpperTriangular, cholesky
 

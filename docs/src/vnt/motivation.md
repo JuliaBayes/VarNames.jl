@@ -73,7 +73,7 @@ This allows us to store arbitrary `VarName`s as keys, and arbitrary values.
 Again, there was a `SimpleVarInfo` implementation that used this approach (specifically an `OrderedDict`).
 
 ```@example 1
-using Varnames
+using VarNames
 
 Dict(
     @varname(x[1]) => 0.5,

@@ -1,9 +1,9 @@
 module AquaTests
 
 using Aqua: Aqua
-using Varnames: Varnames
+using VarNames: VarNames
 
 @info "Testing Aqua.jl"
-Aqua.test_all(Varnames)
+Aqua.test_all(VarNames)
 
 end

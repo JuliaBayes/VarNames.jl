@@ -1,6 +1,6 @@
 module VarNameSubsumesTests
 
-using Varnames
+using VarNames
 using Test
 
 @testset "varname/subsumes.jl" verbose = true begin

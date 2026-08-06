@@ -1,6 +1,6 @@
 module VarNameHasValueTests
 
-using Varnames
+using VarNames
 using DimensionalData: DimensionalData as DD
 using Test
 

@@ -64,7 +64,7 @@ Specifically, suppose you have a custom index type `MyIndexType` and you want
 to be able to de/serialise a `VarName` containing this index type. You should
 then implement the following two methods:
 
-1. `Varnames.index_to_dict(i::MyModule.MyIndexType)` should return a
+1. `VarNames.index_to_dict(i::MyModule.MyIndexType)` should return a
    dictionary representation of the index `i`. This dictionary must contain the
    key `"type"`, and the corresponding value must be a string that uniquely
    identifies the index type. Generally, it makes sense to use the name of the
@@ -77,11 +77,11 @@ then implement the following two methods:
 
 2. Suppose the value of `index_to_dict(i)["type"]` is `"MyModule.MyIndexType"`.
    You should then implement the corresponding method
-   `Varnames.dict_to_index(::Val{Symbol("MyModule.MyIndexType")}, dict)`,
+   `VarNames.dict_to_index(::Val{Symbol("MyModule.MyIndexType")}, dict)`,
    which should take the dictionary representation as the second argument and
    return the original `MyIndexType` object.
 
-To see an example of this in action, you can look in the the Varnames test
+To see an example of this in action, you can look in the the VarNames test
 suite, which contains a test for serialising OffsetArrays.
 """
 function dict_to_index(dict)

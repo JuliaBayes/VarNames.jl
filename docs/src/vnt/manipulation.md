@@ -8,12 +8,12 @@ However, here we will briefly discuss two of the more 'special' functions, which
 
 ## Densification
 
-The function [`Varnames.densify!!`](@ref) converts VNTs to 'dense' representations: essentially, this means converting any `PartialArray`s whose masks are completely `true` to regular arrays.
+The function [`VarNames.densify!!`](@ref) converts VNTs to 'dense' representations: essentially, this means converting any `PartialArray`s whose masks are completely `true` to regular arrays.
 
 For example, this VNT contains a `PartialArray` which is *really* the same thing as a regular array:
 
 ```@example 1
-using Varnames
+using VarNames
 
 vnt = @vnt begin
     @template x = zeros(2)
@@ -49,7 +49,7 @@ This goes back to our arguments about 'constructiveness' [in the VNT motivation 
 
 ## Skeleton VNTs
 
-Another function, [`Varnames.skeleton`](@ref), is used to generate 'skeletons' of VNTs.
+Another function, [`VarNames.skeleton`](@ref), is used to generate 'skeletons' of VNTs.
 Specifically, a skeleton of a VNT is one that contains enough template information to reconstruct the VNT from its key-value pairs.
 
 This is best illustrated by example:
@@ -101,20 +101,20 @@ Furthermore, the element type of the array is not needed when reconstructing dat
 For example, this is how we would reconstruct the original VNT:
 
 ```@example 1
-using Varnames: getsym
+using VarNames: getsym
 
 # In a real setting you wouldn't need `begin .. end` and `local`.
 begin
     local new_vnt = VarNamedTuple()
     for (vn, val) in pairs(od)
         top_sym = getsym(vn)
-        template = get(skel.data, top_sym, Varnames.NoTemplate())
-        new_vnt = Varnames.templated_setindex!!(new_vnt, val, vn, template)
+        template = get(skel.data, top_sym, VarNames.NoTemplate())
+        new_vnt = VarNames.templated_setindex!!(new_vnt, val, vn, template)
     end
     new_vnt
 end
 ```
 
 In the call to `templated_setindex!!` for `x`, the template is `fill(nothing, 3)`.
-However, the element type of this template array is not important: when Varnames instantiates the new PartialArray, it will use `typeof(val)` rather than `eltype(template)` to determine the element type it should use.
+However, the element type of this template array is not important: when VarNames instantiates the new PartialArray, it will use `typeof(val)` rather than `eltype(template)` to determine the element type it should use.
 This allows us to freely choose any element type we like in the skeleton.

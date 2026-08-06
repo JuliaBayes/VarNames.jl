@@ -1,7 +1,7 @@
 module VarNameSerialisationTests
 
 using InvertedIndices: Not, InvertedIndex
-using Varnames
+using VarNames
 using Test
 
 @testset "varname/serialize.jl" verbose = true begin
@@ -61,21 +61,21 @@ using Test
         @test_throws MethodError varname_to_string(vn)
 
         # Now define the relevant methods
-        Varnames.index_to_dict(o::InvertedIndex{I}) where {I} = Dict(
+        VarNames.index_to_dict(o::InvertedIndex{I}) where {I} = Dict(
             "type" => "InvertedIndices.InvertedIndex",
-            "skip" => Varnames.index_to_dict(o.skip),
+            "skip" => VarNames.index_to_dict(o.skip),
         )
-        Varnames.dict_to_index(::Val{Symbol("InvertedIndices.InvertedIndex")}, d) =
-            InvertedIndex(Varnames.dict_to_index(d["skip"]))
+        VarNames.dict_to_index(::Val{Symbol("InvertedIndices.InvertedIndex")}, d) =
+            InvertedIndex(VarNames.dict_to_index(d["skip"]))
 
         # Serialisation should now work
         @test string_to_varname(varname_to_string(vn)) == vn
 
         # Delete the methods to avoid side effects when running tests again.
-        Base.delete_method(which(Varnames.index_to_dict, (InvertedIndex{Int},)))
+        Base.delete_method(which(VarNames.index_to_dict, (InvertedIndex{Int},)))
         Base.delete_method(
             which(
-                Varnames.dict_to_index,
+                VarNames.dict_to_index,
                 (Val{Symbol("InvertedIndices.InvertedIndex")}, Dict),
             ),
         )

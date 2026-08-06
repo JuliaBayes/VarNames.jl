@@ -3,7 +3,7 @@
 # able to override their behaviour for some types exported from elsewhere without type
 # piracy. This is needed because
 # 1. We would want to index into things with lenses using getindex and setindex!!, but
-#    Varnames does not define these methods.
+#    VarNames does not define these methods.
 # 2. We would want `haskey` to fall back onto `checkbounds` when called on Base.Arrays.
 
 const IndexWithoutChild = Index{<:Tuple,<:NamedTuple,Iden}

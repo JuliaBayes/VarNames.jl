@@ -5,8 +5,8 @@ The core entry point is a function called `_setindex_optic!!`, which essentially
 For example,
 
 ```@example 1
-using Varnames
-using Varnames: _setindex_optic!!, AllowAll
+using VarNames
+using VarNames: _setindex_optic!!, AllowAll
 
 collection = VarNamedTuple()
 _setindex_optic!!(collection, 1.0, @opticof(_.x[1].a), NoTemplate(), AllowAll())
@@ -47,7 +47,7 @@ Of course, the value itself (1.0) can be indexed into with the identity optic to
 So we can just return the value.
 
 ```@example 1
-using Varnames: make_leaf
+using VarNames: make_leaf
 
 make_leaf(1.0, @opticof(_), NoTemplate())
 ```
