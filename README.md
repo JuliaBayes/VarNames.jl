@@ -1,5 +1,7 @@
 # VarNames.jl
 
+[![Dev docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliabayes.org/VarNames.jl/)
+
 This package provides two types, `VarName` and `VarNamedTuple`, along with associated functionality.
 
 These types were originally developed for use in Turing.jl, and the code is directly lifted from its dependencies.
