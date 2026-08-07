@@ -9,8 +9,7 @@ using JET: @test_call
         @test @vn(x) == (@inferred VarName{:x}(Iden()))
         @test @vn(x[1]) == (@inferred VarName{:x}(Index((1,), (;), Iden())))
         @test @vn(x.a) == (@inferred VarName{:x}(Property{:a}(Iden())))
-        @test @vn(x.a[1]) ==
-              (@inferred VarName{:x}(Property{:a}(Index((1,), (;), Iden()))))
+        @test @vn(x.a[1]) == (@inferred VarName{:x}(Property{:a}(Index((1,), (;), Iden()))))
     end
 
     @testset "errors on invalid inputs" begin

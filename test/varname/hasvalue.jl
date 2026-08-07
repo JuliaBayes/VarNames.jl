@@ -188,11 +188,7 @@ end
     end
 
     @testset "Dict with non-identity varname keys" begin
-        d = Dict(
-            @vn(a[1]) => [1.0, 2.0],
-            @vn(b.x) => [3.0],
-            @vn(c[2]) => (a=4.0, b=5.0),
-        )
+        d = Dict(@vn(a[1]) => [1.0, 2.0], @vn(b.x) => [3.0], @vn(c[2]) => (a=4.0, b=5.0))
         @test hasvalue(d, @vn(a[1]))
         @test getvalue(d, @vn(a[1])) == [1.0, 2.0]
         @test hasvalue(d, @vn(a[1][1]))
@@ -300,11 +296,7 @@ end
 
     @testset "LKJCholesky :upside_down_smile:" begin
         # yes, this isn't a valid Cholesky sample, but whatever
-        d = Dict(
-            @vn(x.L[1, 1]) => 1.0,
-            @vn(x.L[2, 1]) => 2.0,
-            @vn(x.L[2, 2]) => 3.0,
-        )
+        d = Dict(@vn(x.L[1, 1]) => 1.0, @vn(x.L[2, 1]) => 2.0, @vn(x.L[2, 2]) => 3.0)
         @test hasvalue(d, @vn(x), LKJCholesky(2, 1.0))
         @test getvalue(d, @vn(x), LKJCholesky(2, 1.0)) ==
               Cholesky(LowerTriangular([1.0 0.0; 2.0 3.0]))
@@ -317,11 +309,7 @@ end
         )
         @test !hasvalue(d, @vn(y), LKJCholesky(3, 1.0); error_on_incomplete=true)
 
-        d = Dict(
-            @vn(x.U[1, 1]) => 1.0,
-            @vn(x.U[1, 2]) => 2.0,
-            @vn(x.U[2, 2]) => 3.0,
-        )
+        d = Dict(@vn(x.U[1, 1]) => 1.0, @vn(x.U[1, 2]) => 2.0, @vn(x.U[2, 2]) => 3.0)
         @test hasvalue(d, @vn(x), LKJCholesky(2, 1.0, :U))
         @test getvalue(d, @vn(x), LKJCholesky(2, 1.0, :U)) ==
               Cholesky(UpperTriangular([1.0 2.0; 0.0 3.0]))

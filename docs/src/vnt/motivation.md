@@ -75,12 +75,7 @@ Again, there was a `SimpleVarInfo` implementation that used this approach (speci
 ```@example 1
 using VarNames
 
-Dict(
-    @vn(x[1]) => 0.5,
-    @vn(x[2]) => -1.2,
-    @vn(x[3]) => 1.7,
-    @vn(y.a) => 0.3,
-)
+Dict(@vn(x[1]) => 0.5, @vn(x[2]) => -1.2, @vn(x[3]) => 1.7, @vn(y.a) => 0.3)
 ```
 
 The main issue with Dicts is performance.
