@@ -797,17 +797,13 @@ function _warn_growable_array_extraction()
         " used to set values; but this may not be the actual type or size" *
         " of the actual `AbstractArray` that is relevant for your usecase." *
         " You should inspect the returned result to make sure that it has the" *
-        " correct value.\n\n" *
-        "To find out how to avoid this warning, please see: " *
-        "https://turinglang.org/docs/uri/growablearray"
+        " correct value."
     )
 end
 function _warn_growable_array_creation(size)
     @warn (
         "Creating a growable `Base.Array` of dimension $(length(size)) to store" *
         " values. This may not match the actual type or size of the actual" *
-        " `AbstractArray` that is relevant for your usecase.\n\n" *
-        " If this is not the type or size that you expect, please see:" *
-        " https://turinglang.org/docs/uri/growablearray"
+        " `AbstractArray` that is relevant for your usecase."
     )
 end
