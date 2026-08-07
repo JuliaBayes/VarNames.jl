@@ -1,6 +1,6 @@
 # VarNames.jl
 
-[![Dev docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliabayes.org/VarNames.jl/)
+[![Stable docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliabayes.org/VarNames.jl/)
 
 This package provides two types, `VarName` and `VarNamedTuple`, along with associated functionality.
 
