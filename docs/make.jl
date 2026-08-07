@@ -26,7 +26,7 @@ makedocs(;
 )
 
 Documenter.deploydocs(;
-    repo="github.com/penelopeysm/VarNames.jl",
+    repo="github.com/JuliaBayes/VarNames.jl",
     target="build",
     push_preview=true,
 )
