@@ -4,7 +4,7 @@
 
 This package provides two types, `VarName` and `VarNamedTuple`, along with associated functionality.
 
-These types were originally developed for use in Turing.jl, and the code is directly lifted from its dependencies.
+These types were originally developed for use in Turing.jl, and the code is directly lifted from its dependencies (with some usability improvements).
 However, they are general enough to be useful in other contexts and so have been extracted into a separate package.
 
 ## `VarName`
