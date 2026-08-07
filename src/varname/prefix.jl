@@ -15,20 +15,20 @@ end
 Remove a prefix from a VarName.
 
 ```jldoctest
-julia> unprefix(@varname(y.x), @varname(y))
+julia> unprefix(@vn(y.x), @vn(y))
 x
 
-julia> unprefix(@varname(y.x.a), @varname(y))
+julia> unprefix(@vn(y.x.a), @vn(y))
 x.a
 
-julia> unprefix(@varname(y[1].x), @varname(y[1]))
+julia> unprefix(@vn(y[1].x), @vn(y[1]))
 x
 
-julia> unprefix(@varname(y), @varname(n))
+julia> unprefix(@vn(y), @vn(n))
 ERROR: ArgumentError: cannot remove prefix n from VarName y
 [...]
 
-julia> unprefix(@varname(y[1]), @varname(y))
+julia> unprefix(@vn(y[1]), @vn(y))
 ERROR: ArgumentError: optic_to_varname: can only convert Property optics to VarName
 [...]
 ```
@@ -52,13 +52,13 @@ end
 Add a prefix to a VarName.
 
 ```jldoctest
-julia> prefix(@varname(x), @varname(y))
+julia> prefix(@vn(x), @vn(y))
 y.x
 
-julia> prefix(@varname(x.a), @varname(y))
+julia> prefix(@vn(x.a), @vn(y))
 y.x.a
 
-julia> prefix(@varname(x.a), @varname(y[1]))
+julia> prefix(@vn(x.a), @vn(y[1]))
 y[1].x.a
 ```
 """

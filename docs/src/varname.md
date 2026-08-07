@@ -6,17 +6,17 @@ Fundamentally, a `VarName` comprises a symbol (which represents the name of the 
 For example, `x.a[1]` means the first element of the field `a` of the variable `x`.
 Here, `x` is the symbol, and `.a[1]` is the optic.
 
-VarNames can be created using the `@varname` macro:
+VarNames can be created using the `@vn` macro:
 
 ```@example vn
 using VarNames
 
-vn = @varname(x.a[1])
+vn = @vn(x.a[1])
 ```
 
 ```@docs
 VarName
-@varname
+@vn
 varname
 ```
 
@@ -42,7 +42,7 @@ This is also true for any expression that contains `begin` or `end`, such as `en
 Dynamic indices are represented using an internal type, `VarNames.DynamicIndex`.
 
 ```@example vn
-vn_dyn = @varname(x[1:2:end])
+vn_dyn = @vn(x[1:2:end])
 ```
 
 You can detect whether a VarName contains dynamic indices using the `is_dynamic` function:
@@ -80,7 +80,7 @@ Property{:a} -> Index{1} -> Iden
 All optic linked lists are terminated with an `Iden` optic, which represents the identity function.
 
 ```@example vn
-optic = getoptic(@varname x.a[1])
+optic = getoptic(@vn x.a[1])
 dump(optic)
 ```
 
@@ -91,7 +91,7 @@ Index
 Iden
 ```
 
-Instead of calling `getoptic(@varname(...))`, you can directly use the [`@opticof`](@ref) macro to create optics:
+Instead of calling `getoptic(@vn(...))`, you can directly use the [`@opticof`](@ref) macro to create optics:
 
 ```@example vn
 optic = @opticof(_.a[1])
@@ -214,8 +214,8 @@ Sometimes, we want to check whether one VarName 'subsumes' another; that is, whe
 This is done using the [`subsumes`](@ref) function:
 
 ```@example vn
-vn1 = @varname(x.a)
-vn2 = @varname(x.a[1])
+vn1 = @vn(x.a)
+vn2 = @vn(x.a[1])
 subsumes(vn1, vn2)
 ```
 

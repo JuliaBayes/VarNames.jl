@@ -9,39 +9,39 @@ using Test
         y = ones(10)
         z = ones(5, 2)
         vns = [
-            @varname(x),
-            @varname(ä),
-            @varname(x.a),
-            @varname(x.a.b),
-            @varname(var"x.a"),
-            @varname(x[1]),
-            @varname(var"x[1]"),
-            @varname(x[1:10]),
-            @varname(x[1:3:10]),
-            @varname(x[1, 2]),
-            @varname(x[1, 2:5]),
-            @varname(x[:]),
-            @varname(x.a[1]),
-            @varname(x.a[1:10]),
-            @varname(x[1].a),
-            @varname(y[:]),
-            @varname(y[begin:end], true),
-            @varname(y[end], true),
-            @varname(y[:], false),
-            @varname(y[:], true),
-            @varname(z[:], false),
-            @varname(z[:], true),
-            @varname(z[:][:], false),
-            @varname(z[:][:], true),
-            @varname(z[:, :], false),
-            @varname(z[:, :], true),
-            @varname(z[2:5, :], false),
-            @varname(z[2:5, :], true),
-            @varname(x[i=1]),
-            @varname(x[j=2, i=1]),
-            @varname(x[i=1, j=2]),
-            @varname(x[].a[j=2].b[3, 4, 5, [6]]),
-            @varname(x[[1, 2, 5, 6]]),
+            @vn(x),
+            @vn(ä),
+            @vn(x.a),
+            @vn(x.a.b),
+            @vn(var"x.a"),
+            @vn(x[1]),
+            @vn(var"x[1]"),
+            @vn(x[1:10]),
+            @vn(x[1:3:10]),
+            @vn(x[1, 2]),
+            @vn(x[1, 2:5]),
+            @vn(x[:]),
+            @vn(x.a[1]),
+            @vn(x.a[1:10]),
+            @vn(x[1].a),
+            @vn(y[:]),
+            @vn(y[begin:end], true),
+            @vn(y[end], true),
+            @vn(y[:], false),
+            @vn(y[:], true),
+            @vn(z[:], false),
+            @vn(z[:], true),
+            @vn(z[:][:], false),
+            @vn(z[:][:], true),
+            @vn(z[:, :], false),
+            @vn(z[:, :], true),
+            @vn(z[2:5, :], false),
+            @vn(z[2:5, :], true),
+            @vn(x[i=1]),
+            @vn(x[j=2, i=1]),
+            @vn(x[i=1, j=2]),
+            @vn(x[].a[j=2].b[3, 4, 5, [6]]),
+            @vn(x[[1, 2, 5, 6]]),
         ]
         for vn in vns
             @test string_to_varname(varname_to_string(vn)) == vn
@@ -49,13 +49,13 @@ using Test
     end
 
     @testset "deserialisation fails for unconcretised dynamic indices" begin
-        for vn in (@varname(x[1:end]), @varname(x[begin:end]), @varname(x[2:step:end]))
+        for vn in (@vn(x[1:end]), @vn(x[begin:end]), @vn(x[2:step:end]))
             @test_throws ArgumentError varname_to_string(vn)
         end
     end
 
     @testset "custom index types" begin
-        vn = @varname(x[Not(3)])
+        vn = @vn(x[Not(3)])
 
         # This won't work as we don't yet know how to handle OffsetArray
         @test_throws MethodError varname_to_string(vn)

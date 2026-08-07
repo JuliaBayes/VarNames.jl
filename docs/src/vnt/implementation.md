@@ -15,8 +15,8 @@ _setindex_optic!!(collection, 1.0, @opticof(_.x[1].a), NoTemplate(), AllowAll())
 means: 'modify this collection such that the value at the path `_.x[1].a` is set to `1.0`, creating any missing structure along the way, with no template provided.'
 (`AllowAll()` here is a marker that says that `_setindex_optic!!` is allowed to create a new key if it doesn't already exist, and also overwrite an old key if it does already exist.)
 
-Notice that, if `collection` is the top-level `VarNamedTuple` being used to hold variable values, this is the same as saying "add the `VarName` `@varname(x[1].a)` with value `1.0` to the `VarNamedTuple` `vnt`".
-Indeed, `BangBang.setindex!!(vnt, 1.0, @varname(x[1].a))` directly calls the above.
+Notice that, if `collection` is the top-level `VarNamedTuple` being used to hold variable values, this is the same as saying "add the `VarName` `@vn(x[1].a)` with value `1.0` to the `VarNamedTuple` `vnt`".
+Indeed, `BangBang.setindex!!(vnt, 1.0, @vn(x[1].a))` directly calls the above.
 
 If a template is provided, it must be for the entire structure being created, that is, the template should be the shape of `vnt`.
 

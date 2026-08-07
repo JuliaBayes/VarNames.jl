@@ -31,7 +31,7 @@ dense_vnt = densify!!(vnt)
 Note that `vnt` and `dense_vnt` contain the same values, and you can index into them in the same way:
 
 ```@example 1
-vnt[@varname(x)], dense_vnt[@varname(x)]
+vnt[@vn(x)], dense_vnt[@vn(x)]
 ```
 
 However, they differ in the *keys* that they return.

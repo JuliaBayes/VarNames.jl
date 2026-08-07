@@ -16,7 +16,7 @@ struct Dirichlet{T}
     α::Vector{T}
 end
 
-d = Dict{VarName,Dirichlet}(@varname(x[1:3]) => Dirichlet(ones(3)))
+d = Dict{VarName,Dirichlet}(@vn(x[1:3]) => Dirichlet(ones(3)))
 ```
 
 but we incur all the costs associated with the use of a `Dict`, as described before.
@@ -58,25 +58,25 @@ Under the hood, `templated_setindex!!` will automatically wrap values in `ArrayL
 
 ```@example 1
 x = zeros(5)
-vnt = templated_setindex!!(VarNamedTuple(), Dirichlet(ones(3)), @varname(x[1:3]), x)
+vnt = templated_setindex!!(VarNamedTuple(), Dirichlet(ones(3)), @vn(x[1:3]), x)
 ```
 
 You can access the value again as long as you refer to the full range:
 
 ```@example 1
-vnt[@varname(x[1:3])]
+vnt[@vn(x[1:3])]
 ```
 
 Because we provided template information, you can access this via any other combination of indexing, as long as it refers to all three indices:
 
 ```@example 1
-vnt[@varname(x[begin:(end-2)])]
+vnt[@vn(x[begin:(end-2)])]
 ```
 
 However, if you try to access only part of the block, you will get an error:
 
 ```@repl 1
-vnt[@varname(x[1])]
+vnt[@vn(x[1])]
 ```
 
 Furthermore, if you set a value into any of the indices covered by the block, the entire block is invalidated and thus removed:
@@ -84,5 +84,5 @@ Furthermore, if you set a value into any of the indices covered by the block, th
 ```@example 1
 struct Normal end # Again a fake struct to avoid importing Distributions.
 
-vnt = templated_setindex!!(vnt, Normal(), @varname(x[2]), x)
+vnt = templated_setindex!!(vnt, Normal(), @vn(x[2]), x)
 ```

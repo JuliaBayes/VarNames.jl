@@ -5,10 +5,10 @@ Check whether the variable name `child` describes a sub-range of the variable `p
 i.e., is contained within it.
 
 ```jldoctest
-julia> subsumes(@varname(x), @varname(x[1, 2]))
+julia> subsumes(@vn(x), @vn(x[1, 2]))
 true
 
-julia> subsumes(@varname(x[1, 2]), @varname(x[1, 2][3]))
+julia> subsumes(@vn(x[1, 2]), @vn(x[1, 2][3]))
 true
 ```
 

@@ -6,7 +6,7 @@ top-level Julia variable, while `optic` allows one to specify a particular prope
 inside that variable.
 
 `VarName`s can be manually constructed using the `VarName{sym}(optic)` constructor, or from
-an optic expression through the [`@varname`](@ref) convenience macro.
+an optic expression through the [`@vn`](@ref) convenience macro.
 """
 struct VarName{sym,T<:AbstractOptic}
     optic::T
@@ -23,10 +23,10 @@ Return the symbol of the Julia variable used to generate `vn`.
 ## Examples
 
 ```jldoctest
-julia> getsym(@varname(x[1][2:3]))
+julia> getsym(@vn(x[1][2:3]))
 :x
 
-julia> getsym(@varname(y))
+julia> getsym(@vn(y))
 :y
 ```
 """
@@ -40,10 +40,10 @@ Return the optic of the Julia variable used to generate `vn`.
 ## Examples
 
 ```jldoctest
-julia> getoptic(@varname(x[1][2:3]))
+julia> getoptic(@vn(x[1][2:3]))
 Optic([1][2:3])
 
-julia> getoptic(@varname(y))
+julia> getoptic(@vn(y))
 Optic()
 ```
 """
@@ -70,10 +70,10 @@ Return a `Symbol` representation of the variable identifier `VarName`.
 
 # Examples
 ```jldoctest
-julia> Symbol(@varname(x[1][2:3]))
+julia> Symbol(@vn(x[1][2:3]))
 Symbol("x[1][2:3]")
 
-julia> Symbol(@varname(x[1][:]))
+julia> Symbol(@vn(x[1][:]))
 Symbol("x[1][:]")
 ```
 """
@@ -100,7 +100,7 @@ is_dynamic(vn::VarName) = is_dynamic(getoptic(vn))
     VarNameParseException(expr)
 
 An exception thrown when a variable name expression cannot be parsed by the
-[`@varname`](@ref) macro.
+[`@vn`](@ref) macro.
 """
 struct VarNameParseException <: Exception
     expr
@@ -112,13 +112,13 @@ end
 """
     VarNameConcretizationException()
 
-When constructing a `VarName` using [`@varname`](@ref) (or [`@opticof`](@ref)), we allow
-for interpolation of the top-level symbol, e.g. using `name = :x; @varname(\$name)`. However,
+When constructing a `VarName` using [`@vn`](@ref) (or [`@opticof`](@ref)), we allow
+for interpolation of the top-level symbol, e.g. using `name = :x; @vn(\$name)`. However,
 if this is done, it is not possible to automatically concretize the resulting `VarName` by
-passing `true` as the second argument to `@varname`.
+passing `true` as the second argument to `@vn`.
 
 Because macros are confusing, this is probably worth more explanation. For example, consider
-the user input `name = :x; @varname(\$name, true)`.
+the user input `name = :x; @vn(\$name, true)`.
 
 Without concretization, we can easily handle this as `VarName{name}(Iden())`. `name` is then
 resolved outside the macro to produce `VarName{:x}(Iden())`. However, to correctly
@@ -135,7 +135,7 @@ function Base.showerror(io::IO, ::VarNameConcretizationException)
 end
 
 """
-    @varname(expr, concretize=false)
+    @vn(expr, concretize=false)
 
 Create a [`VarName`](@ref) given an expression `expr` representing a variable or part of it.
 
@@ -145,16 +145,16 @@ In general, `VarName`s must have a top-level symbol representing the identifier 
 can then have any number of property accesses or indexing operations chained to it.
 
 ```jldoctest
-julia> @varname(x)
+julia> @vn(x)
 x
 
-julia> @varname(x.a.b.c)
+julia> @vn(x.a.b.c)
 x.a.b.c
 
-julia> @varname(x[1][2][3])
+julia> @vn(x[1][2][3])
 x[1][2][3]
 
-julia> @varname(x.a[1:3].b[2])
+julia> @vn(x.a[1:3].b[2])
 x.a[1:3].b[2]
 ```
 
@@ -162,23 +162,23 @@ x.a[1:3].b[2]
 
 Some expressions may involve dynamic indices, specifically, `begin`, `end`. These indices
 cannot be resolved, or 'concretized', until the value being indexed into is known. By
-default, `@varname(...)` will not automatically concretize these expressions, and thus the
+default, `@vn(...)` will not automatically concretize these expressions, and thus the
 resulting `VarName` will contain markers for these.
 
 Note that colons are not considered dynamic.
 
 ```jldoctest
-julia> vn = @varname(x[end])
+julia> vn = @vn(x[end])
 x[DynamicIndex(end)]
 
-julia> vn = @varname(x[1, end-1])
+julia> vn = @vn(x[1, end-1])
 x[1, DynamicIndex(end - 1)]
 ```
 
 You can detect whether a `VarName` contains any dynamic indices using [`is_dynamic`](@ref):
 
 ```jldoctest
-julia> vn = @varname(x[1, end-1]); is_dynamic(vn)
+julia> vn = @vn(x[1, end-1]); is_dynamic(vn)
 true
 ```
 
@@ -188,7 +188,7 @@ To concretize such expressions, you can call [`concretize`](@ref) on the resulti
 ```jldoctest
 julia> x = randn(2, 3);
 
-julia> vn = @varname(x[1, end-1]); vn2 = concretize(vn, x)
+julia> vn = @vn(x[1, end-1]); vn2 = concretize(vn, x)
 x[1, 2]
 
 julia> getoptic(vn2).ix  # Just an ordinary tuple.
@@ -198,14 +198,14 @@ julia> is_dynamic(vn2)
 false
 ```
 
-Alternatively, you can pass `true` as the second positional argument to the `@varname` macro
+Alternatively, you can pass `true` as the second positional argument to the `@vn` macro
 (note that it is not a keyword argument!). This will automatically call [`concretize`](@ref)
 for you, using the top-level symbol to look up the value used for concretization.
 
 ```jldoctest
 julia> x = randn(2, 3);
 
-julia> @varname(x[1:end, end][:], true)
+julia> @vn(x[1:end, end][:], true)
 x[1:2, 3][:]
 ```
 
@@ -215,30 +215,39 @@ Property names, as well as top-level symbols, can also be constructed from inter
 symbols:
 
 ```jldoctest
-julia> name = :hello; @varname(x.\$name)
+julia> name = :hello; @vn(x.\$name)
 x.hello
 
-julia> @varname(\$name)
+julia> @vn(\$name)
 hello
 
-julia> @varname(\$name.a.\$name[1])
+julia> @vn(\$name.a.\$name[1])
 hello.a.hello[1]
 ```
 
 For indices, you do not need to use `\$` to interpolate, just use the variable directly:
 
 ```jldoctest
-julia> ix = 2; @varname(x[ix])
+julia> ix = 2; @vn(x[ix])
 x[2]
 ```
 
 Note that if the top-level symbol is interpolated, automatic concretization is not possible:
 
 ```jldoctest
-julia> name = :x; @varname(\$name[1:end], true)
+julia> name = :x; @vn(\$name[1:end], true)
 ERROR: LoadError: cannot automatically concretize VarName with interpolated top-level symbol; call `concretize(vn, val)` manually instead
 [...]
 ```
+"""
+macro vn(expr, should_concretize::Bool=false)
+    return varname(expr, should_concretize)
+end
+
+"""
+    @varname(expr, should_concretize::Bool)
+
+Longer alias for `@vn(expr, should_concretize)`.
 """
 macro varname(expr, should_concretize::Bool=false)
     return varname(expr, should_concretize)
@@ -247,9 +256,8 @@ end
 """
     varname(expr, should_concretize::Bool)
 
-Implementation of the `@varname` macro. See the documentation for `@varname` for details.
-This function is exported to allow other macros (e.g. in DynamicPPL) to reuse the same
-logic.
+Implementation of the `@vn` macro. See the documentation for `@vn` for details. This
+function is exported to allow other macros to reuse the same logic.
 """
 function varname(expr, should_concretize::Bool)
     unconcretized_vn, sym = _varname(expr, :($(Iden)()))
@@ -269,7 +277,7 @@ function _varname(sym::Symbol, inner_expr)
 end
 function _varname(expr::Expr, inner_expr)
     if Meta.isexpr(expr, :$, 1)
-        # Interpolation of the top-level symbol e.g. @varname($name). If we hit this branch,
+        # Interpolation of the top-level symbol e.g. @vn($name). If we hit this branch,
         # it means that there are no further property/indexing accesses (because otherwise
         # expr.head would be :ref or :.) Thus we don't need to recurse further, and we can
         # just return `inner_expr` as-is.
@@ -310,10 +318,10 @@ function _varname(expr::Expr, inner_expr)
 end
 
 function _handle_property(qn::QuoteNode, original_expr)
-    if qn.value isa Symbol # no interpolation e.g. @varname(x.a)
+    if qn.value isa Symbol # no interpolation e.g. @vn(x.a)
         return qn
     elseif Meta.isexpr(qn.value, :$, 1) && qn.value.args[1] isa Symbol
-        # interpolated property e.g. @varname(x.$name).
+        # interpolated property e.g. @vn(x.$name).
         # TODO(penelopeysm): Note that $name must evaluate to a Symbol, or else you will get
         # a slightly inscrutable error: "ERROR: TypeError: in Type, in parameter, expected
         # Type, got a value of type String". This should probably be fixed, but I don't
@@ -337,8 +345,8 @@ _handle_index(ix::Expr, dim) = _make_dynamicindex_expr(ix, dim)
 """
     @opticof(expr, concretize=false)
 
-Extract the optic from `@varname(expr, concretize)`. This is a thin wrapper around
-`getoptic(@varname(...))`.
+Extract the optic from `@vn(expr, concretize)`. This is a thin wrapper around
+`getoptic(@vn(...))`.
 
 If you don't need to concretize, you should use `_` as the top-level symbol to
 indicate that it is not relevant:
@@ -356,7 +364,7 @@ julia> x = randn(3, 4); @opticof(x[1:end, end], true)
 Optic([1:3, 4])
 ```
 
-Note that concretization with `@opticof` has the same limitations as with `@varname`,
+Note that concretization with `@opticof` has the same limitations as with `@vn`,
 specifically, if the top-level symbol is interpolated, automatic concretization is not
 possible.
 """
@@ -390,7 +398,7 @@ Compose `optic` with the optic in `vn`, returning a new `VarName`.
 `optic` is placed at the tail of the existing optic, e.g.
 
 ```jldoctest
-julia> vn = @varname(x.a.b)
+julia> vn = @vn(x.a.b)
 x.a.b
 
 julia> append_optic(vn, @opticof(_[1]))

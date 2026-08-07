@@ -75,12 +75,7 @@ Again, there was a `SimpleVarInfo` implementation that used this approach (speci
 ```@example 1
 using VarNames
 
-Dict(
-    @varname(x[1]) => 0.5,
-    @varname(x[2]) => -1.2,
-    @varname(x[3]) => 1.7,
-    @varname(y.a) => 0.3,
-)
+Dict(@vn(x[1]) => 0.5, @vn(x[2]) => -1.2, @vn(x[3]) => 1.7, @vn(y.a) => 0.3)
 ```
 
 The main issue with Dicts is performance.
@@ -118,14 +113,14 @@ Let's say we are using a `Dict` to store the values.
 We would have something like
 
 ```@example 1
-d = Dict(@varname(x[1]) => 0.5, @varname(x[2]) => -1.2)
+d = Dict(@vn(x[1]) => 0.5, @vn(x[2]) => -1.2)
 ```
 
-but attempting to get `d[@varname(x)]` would return `nothing`, since there is no such key in the `Dict`.
+but attempting to get `d[@vn(x)]` would return `nothing`, since there is no such key in the `Dict`.
 In fact, we cannot even access `x[1:2]`, despite both indices obviously being defined.
 
 ```@example 1
-haskey(d, @varname(x)), haskey(d, @varname(x[1:2]))
+haskey(d, @vn(x)), haskey(d, @vn(x[1:2]))
 ```
 
 ### What's the problem with this?
@@ -134,8 +129,8 @@ One problem that a lack of constructiveness caused was that conditioning on valu
 In such cases, you had to condition on `x` in full, rather than its components:
 
 ```julia
-model = f4() | Dict(@varname(x) => [1.0, -1.0])  # This would work.
-model = f4() | Dict(@varname(x[1]) => 1.0, @varname(x[2]) => -1.0)  # This would not.
+model = f4() | Dict(@vn(x) => [1.0, -1.0])  # This would work.
+model = f4() | Dict(@vn(x[1]) => 1.0, @vn(x[2]) => -1.0)  # This would not.
 ```
 
 On top of that, we are unable to properly use different indexing schemes.
