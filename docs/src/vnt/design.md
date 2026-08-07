@@ -7,7 +7,7 @@ There are two aspects to the design of `VarNamedTuple`s: property access, and in
 
 Let's first talk about the `NamedTuple` part.
 In a `VarNamedTuple` each level of a `Property` optic corresponds to a level of nested `NamedTuple`s, with the `Symbol`s of the lenses as keys.
-For instance, the `VarNamedTuple` mapping `@varname(x) => 1, @varname(y.z) => 2` would be stored as
+For instance, the `VarNamedTuple` mapping `@vn(x) => 1, @vn(y.z) => 2` would be stored as
 
 ```julia
 VarNamedTuple(; x=1, y=VarNamedTuple(; z=2))
@@ -104,7 +104,7 @@ pa[:]
 ```
 
 All `Index` optics in `VarName`s correspond to `PartialArray`s in `VarNamedTuple`s.
-For example, let's say we want to store the mappings `@varname(x[1].a) => 1.0`, and `y.b[2,3] => 2.0`.
+For example, let's say we want to store the mappings `@vn(x[1].a) => 1.0`, and `y.b[2,3] => 2.0`.
 The corresponding `VarNamedTuple` would look like this:
 
 ```
@@ -127,8 +127,8 @@ To demonstrate:
 using VarNames
 
 vnt = VarNamedTuple()
-vnt = setindex!!(vnt, 1.0, @varname(x[1].a))
-vnt = setindex!!(vnt, 2.0, @varname(y.b[2, 3]))
+vnt = setindex!!(vnt, 1.0, @vn(x[1].a))
+vnt = setindex!!(vnt, 2.0, @vn(y.b[2, 3]))
 ```
 
 ```@example 1
@@ -170,8 +170,8 @@ From this example, one can see that getting data from a `VarNamedTuple` is as ty
 ## `GrowableArray`s
 
 It's not obvious in the code above, but in the example above, we are implicitly making an assumption based on the indices that we see in the `VarName`s.
-For example, for `@varname(x[1].a)`, based on the index `1` we assume that `x` should be a vector with a length of at least 1.
-Similarly, for `@varname(y.b[2,3])`, we assume that `y.b` should be a matrix with at least 2 rows and 3 columns.
+For example, for `@vn(x[1].a)`, based on the index `1` we assume that `x` should be a vector with a length of at least 1.
+Similarly, for `@vn(y.b[2,3])`, we assume that `y.b` should be a matrix with at least 2 rows and 3 columns.
 
 We can inspect this by looking into the `PartialArray`s:
 
@@ -191,7 +191,7 @@ The reason for such an array type is that you may want to do something like
 begin
     local vnt = VarNamedTuple()
     for i in 1:5
-        vnt = setindex!!(vnt, i, @varname(x[i]))
+        vnt = setindex!!(vnt, i, @vn(x[i]))
     end
     vnt
 end
@@ -206,14 +206,14 @@ These include, for example, linear indexing.
 In this example, the first call will create a `GrowableArray` with one dimension (i.e., a vector); and the second call will fail since we can't index a vector with two indices.
 
 ```@repl 1
-vnt = setindex!!(VarNamedTuple(), 10.0, @varname(x[1]))
-vnt = setindex!!(vnt, 20.0, @varname(x[2, 2]))
+vnt = setindex!!(VarNamedTuple(), 10.0, @vn(x[1]))
+vnt = setindex!!(vnt, 20.0, @vn(x[2, 2]))
 ```
 
 Colons also don't work.
 
 ```@repl 1
-vnt = setindex!!(VarNamedTuple(), randn(2), @varname(x[:]))
+vnt = setindex!!(VarNamedTuple(), randn(2), @vn(x[:]))
 ```
 
 Other things like `OffsetArray`s don't work (because `x[11]` would create a length-11 `GrowableArray`, which might not be appropriate; and `x[-1]` will just straight-up error).
@@ -223,13 +223,13 @@ Finally, we don't know how large the final size of the array should be.
 If you try to access the entire array after setting some elements, it will work, but it will warn you:
 
 ```@repl 1
-vnt = setindex!!(VarNamedTuple(), 10.0, @varname(x[1]))
-vnt[@varname(x)]
+vnt = setindex!!(VarNamedTuple(), 10.0, @vn(x[1]))
+vnt[@vn(x)]
 ```
 
 ## Templated arrays
 
-**The general solution to this problem is for the user to provide a template for the array `x` in advance, so that we know what kind of array to create when we see `@varname(x[...])`.**
+**The general solution to this problem is for the user to provide a template for the array `x` in advance, so that we know what kind of array to create when we see `@vn(x[...])`.**
 
 At a low level, this is done using the [`templated_setindex!!`](@ref) function, which takes an extra argument that specifies the shape of the top-level symbol in the `VarName`.
 
@@ -240,8 +240,8 @@ using VarNames: templated_setindex!!
 
 x = zeros(2, 2)
 vnt = VarNamedTuple()
-vnt = templated_setindex!!(VarNamedTuple(), 10.0, @varname(x[1]), x)
-vnt = setindex!!(vnt, 20.0, @varname(x[2, 2]))
+vnt = templated_setindex!!(VarNamedTuple(), 10.0, @vn(x[1]), x)
+vnt = setindex!!(vnt, 20.0, @vn(x[2, 2]))
 ```
 
 (The second call can also be `templated_setindex!!`, but it isn't necessary since the first call already establishes the shape of `x`, and indeed in such a case the template will be ignored.)
@@ -254,7 +254,7 @@ vnt.data.x.data
 It is no longer growable, so if you try to set an out-of-bounds index, it will error:
 
 ```@repl 1
-vnt = setindex!!(vnt, 30.0, @varname(x[3, 1]))
+vnt = setindex!!(vnt, 30.0, @vn(x[3, 1]))
 ```
 
 This mechanism makes it far more flexible to work with arrays.
@@ -268,7 +268,7 @@ import DimensionalData as DD
 x = DD.DimArray(zeros(2, 3), (DD.X, DD.Y))
 
 vnt = VarNamedTuple()
-vnt = templated_setindex!!(vnt, 1.0, @varname(x[DD.X(1), DD.Y(2)]), x)
+vnt = templated_setindex!!(vnt, 1.0, @vn(x[DD.X(1), DD.Y(2)]), x)
 ```
 
 ```@example 1
@@ -278,7 +278,7 @@ vnt.data.x.data
 You can access the data back again in any way you like, for example using linear indexing here:
 
 ```@example 1
-getindex(vnt, @varname(x[3]))
+getindex(vnt, @vn(x[3]))
 ```
 
 !!! info

@@ -22,7 +22,7 @@ struct NoTemplate end
 A struct representing the fact that `value` is the template for the variable `N` levels down
 from the top-level variable. In other words, SkipTemplate{0}(value) is equivalent to just
 `value`, and SkipTemplate{1}(value) means that `value` is the template for `a` when setting
-the variable `@varname(x.a)`.
+the variable `@vn(x.a)`.
 """
 struct SkipTemplate{N,V}
     value::V

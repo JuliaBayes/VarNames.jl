@@ -265,10 +265,10 @@ function BangBang.empty!!(pa::PartialArray)
 end
 
 # This is a tad hacky: We use _mapreduce_recursive which requires a prefix VarName. We give
-# it the non-sense @varname(_), and then strip it away with the mapping function, returning
+# it the non-sense @vn(_), and then strip it away with the mapping function, returning
 # only the optic.
 function Base.keys(pa::PartialArray)
-    return _mapreduce_recursive(pair -> first(pair).optic, push!, pa, @varname(_), Any[])
+    return _mapreduce_recursive(pair -> first(pair).optic, push!, pa, @vn(_), Any[])
 end
 
 # Length could be defined as a special case of mapreduce, but it's harder to keep it type
@@ -395,7 +395,7 @@ function Base.getindex(pa::PartialArray, inds::Vararg{Any}; kw...)
             throw(alb_err)
         end
     elseif val isa GrowableArray
-        # This code path is hit for things like `vnt[@varname(x[:])]` where `x` is a PA that
+        # This code path is hit for things like `vnt[@vn(x[:])]` where `x` is a PA that
         # stores a GrowableArray. We warn the user that the result may be wrong.
         # TODO(penelopeysm): The DynamicIndex check actually doesn't work here because if
         # you index with `x[end]` for example, `inds` is already concretised outside of this
@@ -566,7 +566,7 @@ function grow_to_indices!!(
             "Cannot expand a GrowableArray with $ndims dimensions" *
             " using an index with $ndims2 dimensions. GrowableArrays" *
             " are created when no template is provided when setting" *
-            " VarNames with indices, e.g. `@varname(x[1])`, which causes" *
+            " VarNames with indices, e.g. `@vn(x[1])`, which causes" *
             " the underlying array to have no knowledge of the shape of `x`. To" *
             " fix this, you should provide a template for `x` when creating" *
             " the VarNamedTuple. Alternatively, if `x` is an array with" *

@@ -8,17 +8,17 @@ Return an iterator over all varnames that are represented by `vn` on `val`.
 ```jldoctest
 julia> using VarNames: varname_leaves
 
-julia> foreach(println, varname_leaves(@varname(x), rand(2)))
+julia> foreach(println, varname_leaves(@vn(x), rand(2)))
 x[1]
 x[2]
 
-julia> foreach(println, varname_leaves(@varname(x[1:2]), rand(2)))
+julia> foreach(println, varname_leaves(@vn(x[1:2]), rand(2)))
 x[1:2][1]
 x[1:2][2]
 
 julia> x = (y = 1, z = [[2.0], [3.0]]);
 
-julia> foreach(println, varname_leaves(@varname(x), x))
+julia> foreach(println, varname_leaves(@vn(x), x))
 x.y
 x.z[1][1]
 x.z[2][1]
@@ -77,17 +77,17 @@ Return an iterator over all varname-value pairs that are represented by `vn` on 
 ```jldoctest varname-and-value-leaves
 julia> using VarNames: varname_and_value_leaves
 
-julia> foreach(println, varname_and_value_leaves(@varname(x), 1:2))
+julia> foreach(println, varname_and_value_leaves(@vn(x), 1:2))
 (x[1], 1)
 (x[2], 2)
 
-julia> foreach(println, varname_and_value_leaves(@varname(x[1:2]), 1:2))
+julia> foreach(println, varname_and_value_leaves(@vn(x[1:2]), 1:2))
 (x[1:2][1], 1)
 (x[1:2][2], 2)
 
 julia> x = (y = 1, z = [[2.0], [3.0]]);
 
-julia> foreach(println, varname_and_value_leaves(@varname(x), x))
+julia> foreach(println, varname_and_value_leaves(@vn(x), x))
 (x.y, 1)
 (x.z[1][1], 2.0)
 (x.z[2][1], 3.0)
@@ -101,25 +101,25 @@ julia> using LinearAlgebra
 julia> x = reshape(1:4, 2, 2);
 
 julia> # `LowerTriangular`
-       foreach(println, varname_and_value_leaves(@varname(x), LowerTriangular(x)))
+       foreach(println, varname_and_value_leaves(@vn(x), LowerTriangular(x)))
 (x[1, 1], 1)
 (x[2, 1], 2)
 (x[2, 2], 4)
 
 julia> # `UpperTriangular`
-       foreach(println, varname_and_value_leaves(@varname(x), UpperTriangular(x)))
+       foreach(println, varname_and_value_leaves(@vn(x), UpperTriangular(x)))
 (x[1, 1], 1)
 (x[1, 2], 3)
 (x[2, 2], 4)
 
 julia> # `Cholesky` with lower-triangular
-       foreach(println, varname_and_value_leaves(@varname(x), Cholesky([1.0 0.0; 0.0 1.0], 'L', 0)))
+       foreach(println, varname_and_value_leaves(@vn(x), Cholesky([1.0 0.0; 0.0 1.0], 'L', 0)))
 (x.L[1, 1], 1.0)
 (x.L[2, 1], 0.0)
 (x.L[2, 2], 1.0)
 
 julia> # `Cholesky` with upper-triangular
-       foreach(println, varname_and_value_leaves(@varname(x), Cholesky([1.0 0.0; 0.0 1.0], 'U', 0)))
+       foreach(println, varname_and_value_leaves(@vn(x), Cholesky([1.0 0.0; 0.0 1.0], 'U', 0)))
 (x.U[1, 1], 1.0)
 (x.U[1, 2], 0.0)
 (x.U[2, 2], 1.0)
@@ -147,7 +147,7 @@ julia> using OrderedCollections: OrderedDict
 
 julia> # With an `AbstractDict` (we use `OrderedDict` here
        # to ensure consistent ordering in doctests)
-       dict = OrderedDict(@varname(y) => 1, @varname(z) => [[2.0], [3.0]]);
+       dict = OrderedDict(@vn(y) => 1, @vn(z) => [[2.0], [3.0]]);
 
 julia> foreach(println, varname_and_value_leaves(dict))
 (y, 1)

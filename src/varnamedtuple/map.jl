@@ -61,11 +61,11 @@ julia> using VarNames: VarNamedTuple, setindex!!, apply!!
 julia> vnt = VarNamedTuple()
 VarNamedTuple()
 
-julia> vnt = setindex!!(vnt, [1, 2, 3], @varname(a))
+julia> vnt = setindex!!(vnt, [1, 2, 3], @vn(a))
 VarNamedTuple
 └─ a => [1, 2, 3]
 
-julia> apply!!(x -> x .+ 1, vnt, @varname(a))
+julia> apply!!(x -> x .+ 1, vnt, @vn(a))
 VarNamedTuple
 └─ a => [2, 3, 4]
 ```
@@ -103,7 +103,7 @@ _map_pairs_recursive!!(pairfunc, x, vn) = pairfunc(vn => x)
 _map_values_recursive!!(func, x) = func(x)
 
 # TODO(mhauru) The below is type unstable for some complex VarNames. My example case
-# for which type stability fails is @varname(e.f[3].g.h[2].i). I don't understand this
+# for which type stability fails is @vn(e.f[3].g.h[2].i). I don't understand this
 # well, but I think it's just because constant propagation gives up at some point, and fails
 # to go through the lines that figure out `new_et`. I could be wrong. I tried fixing this by
 # lifting the first three lines of the function into a generated function, but that seems

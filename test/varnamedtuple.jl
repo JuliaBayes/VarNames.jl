@@ -149,9 +149,9 @@ Base.size(st::SizedThing) = st.size
     @testset "Construction" begin
         vnt1 = VarNamedTuple()
         test_invariants(vnt1)
-        vnt1 = setindex!!(vnt1, 1.0, @varname(a))
-        vnt1 = setindex!!(vnt1, [1, 2, 3], @varname(b))
-        vnt1 = setindex!!(vnt1, "a", @varname(c.d.e))
+        vnt1 = setindex!!(vnt1, 1.0, @vn(a))
+        vnt1 = setindex!!(vnt1, [1, 2, 3], @vn(b))
+        vnt1 = setindex!!(vnt1, "a", @vn(c.d.e))
         test_invariants(vnt1)
 
         vnt2 =
@@ -169,18 +169,18 @@ Base.size(st::SizedThing) = st.size
 
         vnt4 = VarNamedTuple(
             OrderedDict(
-                @varname(a) => 1.0,
-                @varname(b) => [1, 2, 3],
-                @varname(c.d.e) => "a",
+                @vn(a) => 1.0,
+                @vn(b) => [1, 2, 3],
+                @vn(c.d.e) => "a",
             ),
         )
         test_invariants(vnt4)
         @test vnt1 == vnt4
 
         vnt5 = VarNamedTuple((
-            (@varname(a), 1.0),
-            (@varname(b), [1, 2, 3]),
-            (@varname(c.d.e), "a"),
+            (@vn(a), 1.0),
+            (@vn(b), [1, 2, 3]),
+            (@vn(c.d.e), "a"),
         ))
         test_invariants(vnt5)
         @test vnt1 == vnt5
@@ -188,10 +188,10 @@ Base.size(st::SizedThing) = st.size
 
     @testset "individual get/set" begin
         @testset "top-level" begin
-            test_get_set(GetSetTestCase(@varname(a), 0.0, 0.0, []))
+            test_get_set(GetSetTestCase(@vn(a), 0.0, 0.0, []))
             test_get_set(
                 GetSetTestCase(
-                    @varname(b),
+                    @vn(b),
                     [1, 2, 3],
                     zeros(3),
                     [
@@ -207,13 +207,13 @@ Base.size(st::SizedThing) = st.size
         end
 
         @testset "Array indices" begin
-            test_get_set(GetSetTestCase(@varname(c[2]), 0.42, zeros(3), []))
+            test_get_set(GetSetTestCase(@vn(c[2]), 0.42, zeros(3), []))
             # Should still be type stable even though the eltype of the template is different, since
             # the eltype is taken from the value.
-            test_get_set(GetSetTestCase(@varname(c[2]), "a", zeros(3), []))
+            test_get_set(GetSetTestCase(@vn(c[2]), "a", zeros(3), []))
             test_get_set(
                 GetSetTestCase(
-                    @varname(c[2:3]),
+                    @vn(c[2:3]),
                     [0.42, 1.42],
                     zeros(3),
                     [@opticof(_[1]), @opticof(_[2])],
@@ -222,17 +222,17 @@ Base.size(st::SizedThing) = st.size
         end
 
         @testset "Properties" begin
-            test_get_set(GetSetTestCase(@varname(d.a), 0.42, (; a=1.0), []))
-            test_get_set(GetSetTestCase(@varname(d.a.b), 0.42, (; a=(; b=1.0)), []))
+            test_get_set(GetSetTestCase(@vn(d.a), 0.42, (; a=1.0), []))
+            test_get_set(GetSetTestCase(@vn(d.a.b), 0.42, (; a=(; b=1.0)), []))
             # Same as above, should still be type stable.
-            test_get_set(GetSetTestCase(@varname(d.a.b), "a", (; a=(; b=1.0)), []))
-            test_get_set(GetSetTestCase(@varname(d.a[2]), 0.42, (; a=zeros(3)), []))
+            test_get_set(GetSetTestCase(@vn(d.a.b), "a", (; a=(; b=1.0)), []))
+            test_get_set(GetSetTestCase(@vn(d.a[2]), 0.42, (; a=zeros(3)), []))
             test_get_set(
-                GetSetTestCase(@varname(d.a[2].e), 0.42, (; a=fill((; e=3.0), 3)), []),
+                GetSetTestCase(@vn(d.a[2].e), 0.42, (; a=fill((; e=3.0), 3)), []),
             )
             test_get_set(
                 GetSetTestCase(
-                    @varname(e.a.b),
+                    @vn(e.a.b),
                     [1.0, 2.0],
                     (; a=(; b=1.0)),
                     [@opticof(_[1]), @opticof(_[2]), @opticof(_[:]), @opticof(_[1:2])],
@@ -247,7 +247,7 @@ Base.size(st::SizedThing) = st.size
             vnt = VarNamedTuple()
             a = (; b=[nothing, (; y=zeros(2))])
             test_get_set(
-                GetSetTestCase(@varname(a.b[2].y[1]), 1.0, a, []);
+                GetSetTestCase(@vn(a.b[2].y[1]), 1.0, a, []);
                 templated_unstable=true,
             )
             # Apart from the fact that it's 4 levels deep, to trigger the issue, the array
@@ -256,81 +256,81 @@ Base.size(st::SizedThing) = st.size
             # just using fill((; y=zeros(2)), 2) as the template, because that does pass.
             # See for yourself:
             a2 = (; b=fill((; y=zeros(2)), 2))
-            test_get_set(GetSetTestCase(@varname(a.b[2].y[1]), 1.0, a2, []))
+            test_get_set(GetSetTestCase(@vn(a.b[2].y[1]), 1.0, a2, []))
         end
 
         @testset "Matrices" begin
-            test_get_set(GetSetTestCase(@varname(f[1]), 1.0, zeros(2, 2), []))
+            test_get_set(GetSetTestCase(@vn(f[1]), 1.0, zeros(2, 2), []))
             # Without a template this will fail because we don't know how big the second dim is,
             # hence skipping the untemplated setindex.
             test_get_set(
-                GetSetTestCase(@varname(f[1, :]), [1.0, 2.0], zeros(2, 2), []);
+                GetSetTestCase(@vn(f[1, :]), [1.0, 2.0], zeros(2, 2), []);
                 skip_setindex=true,
             )
-            test_get_set(GetSetTestCase(@varname(x[1, 1:3]), rand(3), rand(3, 3), []))
-            test_get_set(GetSetTestCase(@varname(f[1, 1]), 1.0, zeros(2, 2), []))
-            test_get_set(GetSetTestCase(@varname(f[1, 1]), "a", zeros(2, 2), []))
+            test_get_set(GetSetTestCase(@vn(x[1, 1:3]), rand(3), rand(3, 3), []))
+            test_get_set(GetSetTestCase(@vn(f[1, 1]), 1.0, zeros(2, 2), []))
+            test_get_set(GetSetTestCase(@vn(f[1, 1]), "a", zeros(2, 2), []))
             test_get_set(
-                GetSetTestCase(@varname(f[2, 2].b), 1.0, fill((; b=2.0), 2, 2), []),
+                GetSetTestCase(@vn(f[2, 2].b), 1.0, fill((; b=2.0), 2, 2), []),
             )
         end
 
         @testset "Nested single-index" begin
-            test_get_set(GetSetTestCase(@varname(g[2][2]), 1.0, fill(zeros(2), 2), []))
+            test_get_set(GetSetTestCase(@vn(g[2][2]), 1.0, fill(zeros(2), 2), []))
             gelem = (; a=fill(zeros(2), 2))
             g = fill(fill(gelem, 2), 2)
-            test_get_set(GetSetTestCase(@varname(g[2][2].a[1][1]), 1.0, g, []))
+            test_get_set(GetSetTestCase(@vn(g[2][2].a[1][1]), 1.0, g, []))
         end
 
         @testset "Nested multi-index" begin
-            test_get_set(GetSetTestCase(@varname(g[1:2][2]), 1.0, zeros(2), []))
+            test_get_set(GetSetTestCase(@vn(g[1:2][2]), 1.0, zeros(2), []))
             test_get_set(
-                GetSetTestCase(@varname(g[1:2][2].a), 1.0, fill((; a=1.0), 2), []);
+                GetSetTestCase(@vn(g[1:2][2].a), 1.0, fill((; a=1.0), 2), []);
             )
         end
 
         @testset "OffsetArray" begin
             oa = OA.OffsetArray(zeros(5), 11:15)
-            test_get_set(GetSetTestCase(@varname(oa[11]), 1.0, oa, []); skip_setindex=true)
+            test_get_set(GetSetTestCase(@vn(oa[11]), 1.0, oa, []); skip_setindex=true)
             test_get_set(
-                GetSetTestCase(@varname(x.oa[11]), 1.0, (; oa=oa), []);
+                GetSetTestCase(@vn(x.oa[11]), 1.0, (; oa=oa), []);
                 skip_setindex=true,
             )
             oa2 = OA.OffsetArray(fill((; g="a"), 5, 4), 11:15, -2:1)
             test_get_set(
-                GetSetTestCase(@varname(oa2[11, -1].g), 1.0, oa2, []);
+                GetSetTestCase(@vn(oa2[11, -1].g), 1.0, oa2, []);
                 skip_setindex=true,
             )
             test_get_set(
-                GetSetTestCase(@varname(oa2[11, -1]), 1.0, oa2, []);
+                GetSetTestCase(@vn(oa2[11, -1]), 1.0, oa2, []);
                 skip_setindex=true,
             )
         end
 
         @testset "ComponentArray" begin
             ca = CA.ComponentArray(; a=1.0, b=2.0)
-            test_get_set(GetSetTestCase(@varname(x[1]), 1.0, ca, []))
-            test_get_set(GetSetTestCase(@varname(x[2]), 2.0, ca, []))
-            test_get_set(GetSetTestCase(@varname(x.a), 1.0, ca, []))
-            test_get_set(GetSetTestCase(@varname(x.b), 2.0, ca, []))
-            test_get_set(GetSetTestCase(@varname(x[1:2]), [1.0, 2.0], ca, []))
+            test_get_set(GetSetTestCase(@vn(x[1]), 1.0, ca, []))
+            test_get_set(GetSetTestCase(@vn(x[2]), 2.0, ca, []))
+            test_get_set(GetSetTestCase(@vn(x.a), 1.0, ca, []))
+            test_get_set(GetSetTestCase(@vn(x.b), 2.0, ca, []))
+            test_get_set(GetSetTestCase(@vn(x[1:2]), [1.0, 2.0], ca, []))
 
             # ComponentVector with array-valued fields
             ca3 = CA.ComponentArray(; a=[1.0, 2.0], b=[3.0, 4.0])
-            test_get_set(GetSetTestCase(@varname(x.a), [1.0, 2.0], ca3, []))
-            test_get_set(GetSetTestCase(@varname(x.b), [3.0, 4.0], ca3, []))
-            test_get_set(GetSetTestCase(@varname(x.a[1]), 1.0, ca3, []))
+            test_get_set(GetSetTestCase(@vn(x.a), [1.0, 2.0], ca3, []))
+            test_get_set(GetSetTestCase(@vn(x.b), [3.0, 4.0], ca3, []))
+            test_get_set(GetSetTestCase(@vn(x.a[1]), 1.0, ca3, []))
 
             # with nested fields
             ca4 = CA.ComponentArray(; a=(; x=1.0, y=2.0))
-            test_get_set(GetSetTestCase(@varname(x.a.x), 10.0, ca4, []))
-            test_get_set(GetSetTestCase(@varname(x.a.y), 20.0, ca4, []))
-            test_get_set(GetSetTestCase(@varname(x[1]), 10.0, ca4, []))
-            test_get_set(GetSetTestCase(@varname(x[2]), 20.0, ca4, []))
+            test_get_set(GetSetTestCase(@vn(x.a.x), 10.0, ca4, []))
+            test_get_set(GetSetTestCase(@vn(x.a.y), 20.0, ca4, []))
+            test_get_set(GetSetTestCase(@vn(x[1]), 10.0, ca4, []))
+            test_get_set(GetSetTestCase(@vn(x[2]), 20.0, ca4, []))
 
             # Mixed index/property access
             val = rand()
-            vns = (@varname(x[1]), @varname(x.a))
+            vns = (@vn(x[1]), @vn(x.a))
             for set_vn in vns
                 vnt = templated_setindex!!(VarNamedTuple(), val, set_vn, ca)
                 for get_vn in vns
@@ -342,7 +342,7 @@ Base.size(st::SizedThing) = st.size
             val = rand()
             new_val = val + 1
             for (vn1, vn2) in
-                ((@varname(x[1]), @varname(x.a)), (@varname(x.a), @varname(x[1])))
+                ((@vn(x[1]), @vn(x.a)), (@vn(x.a), @vn(x[1])))
                 vnt = VarNamedTuple()
                 vnt = templated_setindex!!(vnt, val, vn1, ca)
                 @test vnt[vn1] == vnt[vn2] == val # Sanity check.
@@ -374,7 +374,7 @@ Base.size(st::SizedThing) = st.size
             #     @descend BangBang.setindex!!(pa, [1.0, 2.0], Not(3))
             #     @descend BangBang.setindex!!(pa, [1.0, 2.0], 1:2)
             test_get_set(
-                GetSetTestCase(@varname(x[II.Not(3)]), randn(2), zeros(3), []);
+                GetSetTestCase(@vn(x[II.Not(3)]), randn(2), zeros(3), []);
                 templated_unstable=true,
                 skip_setindex=true,
             )
@@ -383,20 +383,20 @@ Base.size(st::SizedThing) = st.size
         @testset "DimensionalData" begin
             da = DD.DimArray(randn(3), (DD.X))
             test_get_set(
-                GetSetTestCase(@varname(da[DD.X(2)]), 1.0, da, []);
+                GetSetTestCase(@vn(da[DD.X(2)]), 1.0, da, []);
                 skip_setindex=true,
             )
             test_get_set(
-                GetSetTestCase(@varname(x.da[DD.X(2)]), 1.0, (; da=da), []);
+                GetSetTestCase(@vn(x.da[DD.X(2)]), 1.0, (; da=da), []);
                 skip_setindex=true,
             )
             da2 = DD.DimArray(fill((; g="a"), 3, 5), (DD.X, DD.Y))
             test_get_set(
-                GetSetTestCase(@varname(da2[DD.X(2), DD.Y(1)]), 1.0, da2, []);
+                GetSetTestCase(@vn(da2[DD.X(2), DD.Y(1)]), 1.0, da2, []);
                 skip_setindex=true,
             )
             test_get_set(
-                GetSetTestCase(@varname(da2[DD.X(2), DD.Y(1)].g), "b", da2, []);
+                GetSetTestCase(@vn(da2[DD.X(2), DD.Y(1)].g), "b", da2, []);
                 skip_setindex=true,
             )
         end
@@ -407,11 +407,11 @@ Base.size(st::SizedThing) = st.size
             x.a := 1.0
         end
         # Should throw KeyError for missing top-level symbol
-        @test_throws KeyError vnt[@varname(y)]
+        @test_throws KeyError vnt[@vn(y)]
         # Should throw KeyError for missing nested property
-        @test_throws KeyError vnt[@varname(x.b)]
+        @test_throws KeyError vnt[@vn(x.b)]
         # Sanity check: accessing existing property should work
-        @test vnt[@varname(x.a)] == 1.0
+        @test vnt[@vn(x.a)] == 1.0
     end
 
     @testset "haskey on PartialArray" begin
@@ -422,14 +422,14 @@ Base.size(st::SizedThing) = st.size
                 x[2] := 2.0
             end
             # Sanity check
-            @test haskey(vnt, @varname(x[1]))
-            @test haskey(vnt, @varname(x[2]))
-            @test !haskey(vnt, @varname(x[3]))
+            @test haskey(vnt, @vn(x[1]))
+            @test haskey(vnt, @vn(x[2]))
+            @test !haskey(vnt, @vn(x[3]))
             # These should also be true
-            @test haskey(vnt, @varname(x[1:2]))
-            @test haskey(vnt, @varname(x[1:1]))
-            @test haskey(vnt, @varname(x[2:2]))
-            @test haskey(vnt, @varname(x[:]))
+            @test haskey(vnt, @vn(x[1:2]))
+            @test haskey(vnt, @vn(x[1:1]))
+            @test haskey(vnt, @vn(x[2:2]))
+            @test haskey(vnt, @vn(x[:]))
         end
 
         @testset "mixed values + ALBs" begin
@@ -438,11 +438,11 @@ Base.size(st::SizedThing) = st.size
                 x[1] := 1.0
                 x[2:3] := SizedThing((2,))
             end
-            @test haskey(vnt2, @varname(x[1]))
-            @test haskey(vnt2, @varname(x[2:3]))
-            @test !haskey(vnt2, @varname(x[:]))
-            @test !haskey(vnt2, @varname(x[1:2]))
-            @test !haskey(vnt2, @varname(x))
+            @test haskey(vnt2, @vn(x[1]))
+            @test haskey(vnt2, @vn(x[2:3]))
+            @test !haskey(vnt2, @vn(x[:]))
+            @test !haskey(vnt2, @vn(x[1:2]))
+            @test !haskey(vnt2, @vn(x))
         end
 
         @testset "only ALBs" begin
@@ -450,11 +450,11 @@ Base.size(st::SizedThing) = st.size
                 @template x = zeros(3)
                 x[1:3] := SizedThing((3,))
             end
-            @test haskey(vnt3, @varname(x[1:3]))
-            @test haskey(vnt3, @varname(x[:]))
-            @test haskey(vnt3, @varname(x))
-            @test !haskey(vnt3, @varname(x[1:2]))
-            @test !haskey(vnt3, @varname(x[1]))
+            @test haskey(vnt3, @vn(x[1:3]))
+            @test haskey(vnt3, @vn(x[:]))
+            @test haskey(vnt3, @vn(x))
+            @test !haskey(vnt3, @vn(x[1:2]))
+            @test !haskey(vnt3, @vn(x[1]))
         end
     end
 
@@ -464,114 +464,114 @@ Base.size(st::SizedThing) = st.size
 
     @testset "Chain of sets and gets" begin
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, 32.0, @varname(a)))
-        @test @inferred(getindex(vnt, @varname(a))) == 32.0
-        @test haskey(vnt, @varname(a))
-        @test !haskey(vnt, @varname(b))
+        vnt = @inferred(setindex!!(vnt, 32.0, @vn(a)))
+        @test @inferred(getindex(vnt, @vn(a))) == 32.0
+        @test haskey(vnt, @vn(a))
+        @test !haskey(vnt, @vn(b))
         test_invariants(vnt)
 
-        vnt = @inferred(setindex!!(vnt, [1, 2, 3], @varname(b)))
-        @test @inferred(getindex(vnt, @varname(b))) == [1, 2, 3]
-        @test @inferred(getindex(vnt, @varname(b[2]))) == 2
-        @test haskey(vnt, @varname(b))
-        @test haskey(vnt, @varname(b[1]))
-        @test haskey(vnt, @varname(b[1:3]))
-        @test !haskey(vnt, @varname(b[4]))
+        vnt = @inferred(setindex!!(vnt, [1, 2, 3], @vn(b)))
+        @test @inferred(getindex(vnt, @vn(b))) == [1, 2, 3]
+        @test @inferred(getindex(vnt, @vn(b[2]))) == 2
+        @test haskey(vnt, @vn(b))
+        @test haskey(vnt, @vn(b[1]))
+        @test haskey(vnt, @vn(b[1:3]))
+        @test !haskey(vnt, @vn(b[4]))
         test_invariants(vnt)
 
-        vnt = @inferred(setindex!!(vnt, 64.0, @varname(a)))
-        @test @inferred(getindex(vnt, @varname(a))) == 64.0
-        @test @inferred(getindex(vnt, @varname(b))) == [1, 2, 3]
+        vnt = @inferred(setindex!!(vnt, 64.0, @vn(a)))
+        @test @inferred(getindex(vnt, @vn(a))) == 64.0
+        @test @inferred(getindex(vnt, @vn(b))) == [1, 2, 3]
         test_invariants(vnt)
 
-        vnt = @inferred(setindex!!(vnt, 15, @varname(b[2])))
-        @test @inferred(getindex(vnt, @varname(b))) == [1, 15, 3]
-        @test @inferred(getindex(vnt, @varname(b[2]))) == 15
+        vnt = @inferred(setindex!!(vnt, 15, @vn(b[2])))
+        @test @inferred(getindex(vnt, @vn(b))) == [1, 15, 3]
+        @test @inferred(getindex(vnt, @vn(b[2]))) == 15
         test_invariants(vnt)
 
-        vnt = @inferred(setindex!!(vnt, [10], @varname(c.x.y)))
-        @test @inferred(getindex(vnt, @varname(c.x.y))) == [10]
+        vnt = @inferred(setindex!!(vnt, [10], @vn(c.x.y)))
+        @test @inferred(getindex(vnt, @vn(c.x.y))) == [10]
         test_invariants(vnt)
 
-        vnt = @inferred(setindex!!(vnt, 11, @varname(c.x.y[1])))
-        @test @inferred(getindex(vnt, @varname(c.x.y))) == [11]
-        @test @inferred(getindex(vnt, @varname(c.x.y[1]))) == 11
+        vnt = @inferred(setindex!!(vnt, 11, @vn(c.x.y[1])))
+        @test @inferred(getindex(vnt, @vn(c.x.y))) == [11]
+        @test @inferred(getindex(vnt, @vn(c.x.y[1]))) == 11
         test_invariants(vnt)
 
-        vnt = @inferred(templated_setindex!!(vnt, -1.0, @varname(d[4]), randn(4)))
-        @test @inferred(getindex(vnt, @varname(d[4]))) == -1.0
+        vnt = @inferred(templated_setindex!!(vnt, -1.0, @vn(d[4]), randn(4)))
+        @test @inferred(getindex(vnt, @vn(d[4]))) == -1.0
         test_invariants(vnt)
 
-        vnt = @inferred(setindex!!(vnt, -2.0, @varname(d[4])))
-        @test @inferred(getindex(vnt, @varname(d[4]))) == -2.0
+        vnt = @inferred(setindex!!(vnt, -2.0, @vn(d[4])))
+        @test @inferred(getindex(vnt, @vn(d[4]))) == -2.0
         test_invariants(vnt)
 
         e = (; f=fill((; g=(; h=fill((; i=0.0), 2))), 3))
-        vnt = @inferred(templated_setindex!!(vnt, 1.0, @varname(e.f[3].g.h[2].i), e))
-        @test @inferred(getindex(vnt, @varname(e.f[3].g.h[2].i))) == 1.0
-        @test haskey(vnt, @varname(e.f[3].g.h[2].i))
-        @test !haskey(vnt, @varname(e.f[2].g.h[2].i))
+        vnt = @inferred(templated_setindex!!(vnt, 1.0, @vn(e.f[3].g.h[2].i), e))
+        @test @inferred(getindex(vnt, @vn(e.f[3].g.h[2].i))) == 1.0
+        @test haskey(vnt, @vn(e.f[3].g.h[2].i))
+        @test !haskey(vnt, @vn(e.f[2].g.h[2].i))
         test_invariants(vnt)
 
         # TODO(penelopeysm) This one fails type stability.
         # https://github.com/TuringLang/DynamicPPL.jl/issues/1207
-        vnt = setindex!!(vnt, 2.0, @varname(e.f[3].g.h[2].i))
-        @test @inferred(getindex(vnt, @varname(e.f[3].g.h[2].i))) == 2.0
+        vnt = setindex!!(vnt, 2.0, @vn(e.f[3].g.h[2].i))
+        @test @inferred(getindex(vnt, @vn(e.f[3].g.h[2].i))) == 2.0
         test_invariants(vnt)
 
         jval = fill(1.0, 4)
-        vnt = @inferred(templated_setindex!!(vnt, jval, @varname(j[1:4]), zeros(4)))
-        @test @inferred(getindex(vnt, @varname(j[1:4]))) == jval
-        @test @inferred(getindex(vnt, @varname(j[2]))) == jval[2]
-        @test haskey(vnt, @varname(j[4]))
-        @test !haskey(vnt, @varname(j[5]))
-        @test_throws BoundsError getindex(vnt, @varname(j[5]))
+        vnt = @inferred(templated_setindex!!(vnt, jval, @vn(j[1:4]), zeros(4)))
+        @test @inferred(getindex(vnt, @vn(j[1:4]))) == jval
+        @test @inferred(getindex(vnt, @vn(j[2]))) == jval[2]
+        @test haskey(vnt, @vn(j[4]))
+        @test !haskey(vnt, @vn(j[5]))
+        @test_throws BoundsError getindex(vnt, @vn(j[5]))
         test_invariants(vnt)
 
         j2val = fill(2.0, 4)
-        vnt = @inferred(templated_setindex!!(vnt, j2val, @varname(j2[2:5]), zeros(5)))
-        @test_throws BoundsError getindex(vnt, @varname(j2[1]))
-        @test @inferred(getindex(vnt, @varname(j2[2:5]))) == j2val
-        @test haskey(vnt, @varname(j2[5]))
+        vnt = @inferred(templated_setindex!!(vnt, j2val, @vn(j2[2:5]), zeros(5)))
+        @test_throws BoundsError getindex(vnt, @vn(j2[1]))
+        @test @inferred(getindex(vnt, @vn(j2[2:5]))) == j2val
+        @test haskey(vnt, @vn(j2[5]))
         test_invariants(vnt)
 
         arr = fill(2.0, (4, 2))
-        vn = @varname(k.l[2:5, 3, 1:2, 2])
+        vn = @vn(k.l[2:5, 3, 1:2, 2])
         vnt = @inferred(templated_setindex!!(vnt, arr, vn, (; l=zeros(5, 3, 2, 2))))
         @test @inferred(getindex(vnt, vn)) == arr
         # A subset of the elements set just now.
-        @test @inferred(getindex(vnt, @varname(k.l[2, 3, 1:2, 2]))) == fill(2.0, 2)
+        @test @inferred(getindex(vnt, @vn(k.l[2, 3, 1:2, 2]))) == fill(2.0, 2)
         test_invariants(vnt)
 
         # Not enough, or too many, indices.
-        @test_throws BoundsError setindex!!(vnt, 0.0, @varname(k.l[1, 2, 3]))
-        @test_throws BoundsError setindex!!(vnt, 0.0, @varname(k.l[1, 2, 3, 4, 5]))
+        @test_throws BoundsError setindex!!(vnt, 0.0, @vn(k.l[1, 2, 3]))
+        @test_throws BoundsError setindex!!(vnt, 0.0, @vn(k.l[1, 2, 3, 4, 5]))
 
-        vnt = @inferred(templated_setindex!!(vnt, 1.0, @varname(m[2]), randn(3)))
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(m[3])))
-        @test @inferred(getindex(vnt, @varname(m[2:3]))) == [1.0, 1.0]
-        @test !haskey(vnt, @varname(m[1]))
+        vnt = @inferred(templated_setindex!!(vnt, 1.0, @vn(m[2]), randn(3)))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(m[3])))
+        @test @inferred(getindex(vnt, @vn(m[2:3]))) == [1.0, 1.0]
+        @test !haskey(vnt, @vn(m[1]))
         test_invariants(vnt)
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(m[1])))
-        @test @inferred(getindex(vnt, @varname(m[1:3]))) == ones(3)
-        @test @inferred(getindex(vnt, @varname(m))) == ones(3)
-        @test @inferred(getindex(vnt, @varname(m[:]))) == ones(3)
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(m[1])))
+        @test @inferred(getindex(vnt, @vn(m[1:3]))) == ones(3)
+        @test @inferred(getindex(vnt, @vn(m))) == ones(3)
+        @test @inferred(getindex(vnt, @vn(m[:]))) == ones(3)
         test_invariants(vnt)
 
         # The below tests are mostly significant for the type stability aspect. For the last
         # test to pass, PartialArray needs to actively tighten its eltype when possible.
         vnt = VarNamedTuple()
-        vnt = @inferred(templated_setindex!!(vnt, 1.0, @varname(n[1].a), [0.0, 0.0]))
-        @test @inferred(getindex(vnt, @varname(n[1].a))) == 1.0
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(n[2].a)))
-        @test @inferred(getindex(vnt, @varname(n[2].a))) == 1.0
+        vnt = @inferred(templated_setindex!!(vnt, 1.0, @vn(n[1].a), [0.0, 0.0]))
+        @test @inferred(getindex(vnt, @vn(n[1].a))) == 1.0
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(n[2].a)))
+        @test @inferred(getindex(vnt, @vn(n[2].a))) == 1.0
         # This can't be type stable, because n[1] has inhomogeneous types.
-        vnt = setindex!!(vnt, 1.0, @varname(n[1].b))
-        @test getindex(vnt, @varname(n[1].b)) == 1.0
+        vnt = setindex!!(vnt, 1.0, @vn(n[1].b))
+        @test getindex(vnt, @vn(n[1].b)) == 1.0
         # The setindex!! call can't be type stable either, but it should return a
         # VarNamedTuple with a concrete element type, and hence getindex can be inferred.
-        vnt = setindex!!(vnt, 1.0, @varname(n[2].b))
-        @test @inferred(getindex(vnt, @varname(n[2].b))) == 1.0
+        vnt = setindex!!(vnt, 1.0, @vn(n[2].b))
+        @test @inferred(getindex(vnt, @vn(n[2].b))) == 1.0
         test_invariants(vnt)
 
         # Some funky Symbols in VarNames.
@@ -599,14 +599,14 @@ Base.size(st::SizedThing) = st.size
 
         vnt = VarNamedTuple()
         x = [1, 2, 3]
-        vn = @varname(x[:])
+        vn = @vn(x[:])
         vnt = @inferred(templated_setindex!!(vnt, x, vn, x))
         @test haskey(vnt, vn)
         @test @inferred(getindex(vnt, vn)) == x
         test_invariants(vnt)
 
         vnt = VarNamedTuple()
-        vn = @varname(y[:])
+        vn = @vn(y[:])
         vnt = @inferred(templated_setindex!!(vnt, SizedThing((3,)), vn, randn(3)))
         @test haskey(vnt, vn)
         @test vn in keys(vnt)
@@ -616,7 +616,7 @@ Base.size(st::SizedThing) = st.size
         vnt = VarNamedTuple()
         x = fill("a", (3, 4))
         a = (; b=fill((; c=(; d=zeros(1, 5, 2, 4, 1))), 3))
-        vn = @varname(a.b[3].c.d[1, 3:5, 2, :, 1])
+        vn = @vn(a.b[3].c.d[1, 3:5, 2, :, 1])
         vnt = @inferred(templated_setindex!!(vnt, x, vn, a))
         @test haskey(vnt, vn)
         @test @inferred(getindex(vnt, vn)) == x
@@ -624,22 +624,22 @@ Base.size(st::SizedThing) = st.size
 
         # Indices on indices
         vnt = VarNamedTuple()
-        vnt = @inferred(templated_setindex!!(vnt, 1, @varname(a[1][1]), [[randn()]]))
-        @test @inferred(getindex(vnt, @varname(a[1][1]))) == 1
-        vnt = @inferred(templated_setindex!!(vnt, 1, @varname(ab[1:2][1]), randn(2)))
-        @test @inferred(getindex(vnt, @varname(ab[1]))) == 1
-        @test @inferred(getindex(vnt, @varname(ab[1:2][1]))) == 1
-        @test @inferred(getindex(vnt, @varname(ab[:][1]))) == 1
-        @test_throws BoundsError getindex(vnt, @varname(ab[2]))
+        vnt = @inferred(templated_setindex!!(vnt, 1, @vn(a[1][1]), [[randn()]]))
+        @test @inferred(getindex(vnt, @vn(a[1][1]))) == 1
+        vnt = @inferred(templated_setindex!!(vnt, 1, @vn(ab[1:2][1]), randn(2)))
+        @test @inferred(getindex(vnt, @vn(ab[1]))) == 1
+        @test @inferred(getindex(vnt, @vn(ab[1:2][1]))) == 1
+        @test @inferred(getindex(vnt, @vn(ab[:][1]))) == 1
+        @test_throws BoundsError getindex(vnt, @vn(ab[2]))
         vnt =
-            @inferred(templated_setindex!!(vnt, [1], @varname(b[1].c[1]), [(; c=randn(1))]))
-        @test @inferred(getindex(vnt, @varname(b[1].c[1]))) == [1]
+            @inferred(templated_setindex!!(vnt, [1], @vn(b[1].c[1]), [(; c=randn(1))]))
+        @test @inferred(getindex(vnt, @vn(b[1].c[1]))) == [1]
         # TODO(penelopeysm) These all have to be changed to templated_setindex!!, but I
         # can't be bothered right now.
-        # vnt = @inferred(setindex!!(vnt, [1], @varname(e[3, 2].f[2, 2][10, 10])))
-        # @test @inferred(getindex(vnt, @varname(e[3, 2].f[2, 2][10, 10]))) == [1]
-        # vnt = @inferred(setindex!!(vnt, [1], @varname(g[3, 2][10, 10].h[2, 2])))
-        # @test @inferred(getindex(vnt, @varname(g[3, 2][10, 10].h[2, 2]))) == [1]
+        # vnt = @inferred(setindex!!(vnt, [1], @vn(e[3, 2].f[2, 2][10, 10])))
+        # @test @inferred(getindex(vnt, @vn(e[3, 2].f[2, 2][10, 10]))) == [1]
+        # vnt = @inferred(setindex!!(vnt, [1], @vn(g[3, 2][10, 10].h[2, 2])))
+        # @test @inferred(getindex(vnt, @vn(g[3, 2][10, 10].h[2, 2]))) == [1]
     end
 
     @testset "GrowableArray behaviour" begin
@@ -668,46 +668,46 @@ Base.size(st::SizedThing) = st.size
             x = randn(2, 3)
             vnt = VarNamedTuple()
             for c in CartesianIndices((2, 3))
-                vnt = setindex!!(vnt, x[c], @varname(x[c.I...]))
+                vnt = setindex!!(vnt, x[c], @vn(x[c.I...]))
             end
-            @test vnt[@varname(x)] == x
+            @test vnt[@vn(x)] == x
         end
 
         @testset "GrowableArrays and slices" begin
             # see e.g. https://github.com/TuringLang/DynamicPPL.jl/issues/1216
             vnt = VarNamedTuple()
-            vnt = @inferred(setindex!!(vnt, 1.0, @varname(x[1:2][1])))
-            vnt = @inferred(setindex!!(vnt, 1.0, @varname(x[2:3][1])))
-            @test vnt[@varname(x[1])] == 1.0
-            @test vnt[@varname(x[2])] == 1.0
-            @test_throws BoundsError vnt[@varname(x[3])]
+            vnt = @inferred(setindex!!(vnt, 1.0, @vn(x[1:2][1])))
+            vnt = @inferred(setindex!!(vnt, 1.0, @vn(x[2:3][1])))
+            @test vnt[@vn(x[1])] == 1.0
+            @test vnt[@vn(x[2])] == 1.0
+            @test_throws BoundsError vnt[@vn(x[3])]
 
             # check overlapping indices
             vnt = VarNamedTuple()
-            vnt = @inferred(setindex!!(vnt, 1.0, @varname(x[1:2][2])))
-            vnt = @inferred(setindex!!(vnt, 2.0, @varname(x[2:3][1])))
-            @test_throws BoundsError vnt[@varname(x[1])]
-            @test vnt[@varname(x[2])] == 2.0
-            @test_throws BoundsError vnt[@varname(x[3])]
+            vnt = @inferred(setindex!!(vnt, 1.0, @vn(x[1:2][2])))
+            vnt = @inferred(setindex!!(vnt, 2.0, @vn(x[2:3][1])))
+            @test_throws BoundsError vnt[@vn(x[1])]
+            @test vnt[@vn(x[2])] == 2.0
+            @test_throws BoundsError vnt[@vn(x[3])]
 
             # slices of slices
             vnt = VarNamedTuple()
-            vnt = @inferred(setindex!!(vnt, [1.0, 2.0], @varname(x[2:6][2:3])))
-            vnt = @inferred(setindex!!(vnt, [3.0, 4.0], @varname(x[2:6][4:5])))
-            @test vnt[@varname(x[3:6])] == [1.0, 2.0, 3.0, 4.0]
-            @test_throws BoundsError vnt[@varname(x[1])]
-            @test_throws BoundsError vnt[@varname(x[2])]
-            @test_throws BoundsError vnt[@varname(x[7])]
+            vnt = @inferred(setindex!!(vnt, [1.0, 2.0], @vn(x[2:6][2:3])))
+            vnt = @inferred(setindex!!(vnt, [3.0, 4.0], @vn(x[2:6][4:5])))
+            @test vnt[@vn(x[3:6])] == [1.0, 2.0, 3.0, 4.0]
+            @test_throws BoundsError vnt[@vn(x[1])]
+            @test_throws BoundsError vnt[@vn(x[2])]
+            @test_throws BoundsError vnt[@vn(x[7])]
 
             # overlapping slices of slices
             vnt = VarNamedTuple()
-            vnt = @inferred(setindex!!(vnt, [1.0, 2.0], @varname(x[2:6][2:3])))
-            vnt = @inferred(setindex!!(vnt, [3.0, 4.0], @varname(x[3:5][2:3])))
-            @test vnt[@varname(x[3:5])] == [1.0, 3.0, 4.0]
-            @test_throws BoundsError vnt[@varname(x[1])]
-            @test_throws BoundsError vnt[@varname(x[2])]
-            @test_throws BoundsError vnt[@varname(x[6])]
-            @test_throws BoundsError vnt[@varname(x[7])]
+            vnt = @inferred(setindex!!(vnt, [1.0, 2.0], @vn(x[2:6][2:3])))
+            vnt = @inferred(setindex!!(vnt, [3.0, 4.0], @vn(x[3:5][2:3])))
+            @test vnt[@vn(x[3:5])] == [1.0, 3.0, 4.0]
+            @test_throws BoundsError vnt[@vn(x[1])]
+            @test_throws BoundsError vnt[@vn(x[2])]
+            @test_throws BoundsError vnt[@vn(x[6])]
+            @test_throws BoundsError vnt[@vn(x[7])]
         end
 
         @testset "GrowableArrays only need to grow when setting slices" begin
@@ -716,30 +716,30 @@ Base.size(st::SizedThing) = st.size
             # x[1][1,2], we need to make sure that we don't try to make the inner
             # GrowableArray (that has 2 dims) grow to fit index 1, which would error.
             vnt = VarNamedTuple()
-            vnt = @inferred(setindex!!(vnt, 1.0, @varname(x[1][1, 2])))
-            vnt = @inferred(setindex!!(vnt, 2.0, @varname(x[1][1, 2])))
-            @test @inferred(vnt[@varname(x[1][1, 2])]) == 2.0
+            vnt = @inferred(setindex!!(vnt, 1.0, @vn(x[1][1, 2])))
+            vnt = @inferred(setindex!!(vnt, 2.0, @vn(x[1][1, 2])))
+            @test @inferred(vnt[@vn(x[1][1, 2])]) == 2.0
         end
 
         @testset "Merging" begin
             # Note that there are a couple more merge tests with ALBs under the merge
             # section.
             @testset "non-overlapping" begin
-                v1 = setindex!!(VarNamedTuple(), 1.0, @varname(x[1]))
-                v2 = setindex!!(VarNamedTuple(), 2.0, @varname(x[2]))
+                v1 = setindex!!(VarNamedTuple(), 1.0, @vn(x[1]))
+                v2 = setindex!!(VarNamedTuple(), 2.0, @vn(x[2]))
                 vmerged = @inferred(merge(v1, v2))
-                @test @inferred(vmerged[@varname(x[1])]) == 1.0
-                @test @inferred(vmerged[@varname(x[2])]) == 2.0
+                @test @inferred(vmerged[@vn(x[1])]) == 1.0
+                @test @inferred(vmerged[@vn(x[2])]) == 2.0
                 @test length(keys(vmerged)) == 2
             end
 
             @testset "overlapping" begin
-                v1 = setindex!!(VarNamedTuple(), [1.0, 2.0], @varname(x[1:2]))
-                v2 = setindex!!(VarNamedTuple(), [3.0, 4.0], @varname(x[2:3]))
+                v1 = setindex!!(VarNamedTuple(), [1.0, 2.0], @vn(x[1:2]))
+                v2 = setindex!!(VarNamedTuple(), [3.0, 4.0], @vn(x[2:3]))
                 vmerged = @inferred(merge(v1, v2))
-                @test @inferred(vmerged[@varname(x[1])]) == 1.0
-                @test @inferred(vmerged[@varname(x[2])]) == 3.0
-                @test @inferred(vmerged[@varname(x[3])]) == 4.0
+                @test @inferred(vmerged[@vn(x[1])]) == 1.0
+                @test @inferred(vmerged[@vn(x[2])]) == 3.0
+                @test @inferred(vmerged[@vn(x[3])]) == 4.0
                 @test length(keys(vmerged)) == 3
             end
         end
@@ -747,16 +747,16 @@ Base.size(st::SizedThing) = st.size
         @testset "Warning when setting untemplated values" begin
             warnmsg = r"Creating a growable `Base.Array`"
             @test_logs (:warn, warnmsg) vnt =
-                setindex!!(VarNamedTuple(), [1.0, 2.0], @varname(x[1:2]))
+                setindex!!(VarNamedTuple(), [1.0, 2.0], @vn(x[1:2]))
             @test_logs (:warn, warnmsg) vnt =
-                setindex!!(VarNamedTuple(), 1.0, @varname(x[1]))
+                setindex!!(VarNamedTuple(), 1.0, @vn(x[1]))
             @test_logs (:warn, warnmsg) vnt =
-                setindex!!(VarNamedTuple(), 1.0, @varname(x[2]))
+                setindex!!(VarNamedTuple(), 1.0, @vn(x[2]))
             # This shouldn't warn, because `x` is just the whole vector
-            @test_logs vnt = setindex!!(VarNamedTuple(), [1.0, 2.0], @varname(x))
+            @test_logs vnt = setindex!!(VarNamedTuple(), [1.0, 2.0], @vn(x))
             # With a template it shouldn't warn
             @test_logs vnt =
-                templated_setindex!!(VarNamedTuple(), 1.0, @varname(x[1]), zeros(2))
+                templated_setindex!!(VarNamedTuple(), 1.0, @vn(x[1]), zeros(2))
         end
 
         @testset "Warning when trying to extract values" begin
@@ -767,15 +767,15 @@ Base.size(st::SizedThing) = st.size
             warnmsg = r"Returning a `Base.Array` with"
             # These should warn. There are various calls to _warn_growable_array() inside
             # the VNT code to handle each of these cases.
-            @test_logs (:warn, warnmsg) vnt[@varname(x[:][1])]
-            @test_logs (:warn, warnmsg) vnt[@varname(x[:])]
-            @test_logs (:warn, warnmsg) vnt[@varname(x)]
-            @test_logs (:warn, warnmsg) vnt[@varname(x[begin])]
-            @test_logs (:warn, warnmsg) vnt[@varname(x[end])]
-            @test_logs (:warn, warnmsg) vnt[@varname(x[1:end])]
+            @test_logs (:warn, warnmsg) vnt[@vn(x[:][1])]
+            @test_logs (:warn, warnmsg) vnt[@vn(x[:])]
+            @test_logs (:warn, warnmsg) vnt[@vn(x)]
+            @test_logs (:warn, warnmsg) vnt[@vn(x[begin])]
+            @test_logs (:warn, warnmsg) vnt[@vn(x[end])]
+            @test_logs (:warn, warnmsg) vnt[@vn(x[1:end])]
             # These shouldn't warn because they are safe
-            @test_logs vnt[@varname(x[1:2])]
-            @test_logs vnt[@varname(x[1])]
+            @test_logs vnt[@vn(x[1:2])]
+            @test_logs vnt[@vn(x[1])]
         end
     end
 
@@ -816,13 +816,13 @@ Base.size(st::SizedThing) = st.size
             ((2:3, :, 1), 3),
             ((2:3, :, 2), 3),
         ]
-            # I couldn't figure out a better way to do this. `@varname(x[index_chains...])`
+            # I couldn't figure out a better way to do this. `@vn(x[index_chains...])`
             # works, but it gives the wrong thing: it gives you `x[1:2, 1]` instead of
             # `x[1:2][1]`.
             vn = if length(index_chains) == 2
-                @varname(x[index_chains[1]][index_chains[2]])
+                @vn(x[index_chains[1]][index_chains[2]])
             elseif length(index_chains) == 3
-                @varname(x[index_chains[1]][index_chains[2]][index_chains[3]])
+                @vn(x[index_chains[1]][index_chains[2]][index_chains[3]])
             else
                 error("unsupported length")
             end
@@ -854,13 +854,13 @@ Base.size(st::SizedThing) = st.size
                     templated_setindex!!(VarNamedTuple(), val, vn, zeros(template_length))
                 )
                 @test @inferred(getindex(vnt, vn)) == val
-                normalized_vn = @varname(x[final_indices])
+                normalized_vn = @vn(x[final_indices])
                 @test @inferred(getindex(vnt, normalized_vn)) == val
 
                 # Check that other indices are not set
                 for i in 1:template_length
                     if !(i in final_indices)
-                        @test_throws BoundsError getindex(vnt, @varname(x[i]))
+                        @test_throws BoundsError getindex(vnt, @vn(x[i]))
                     end
                 end
             end
@@ -880,26 +880,26 @@ Base.size(st::SizedThing) = st.size
         for (func!!, args) in ((templated_setindex!!, (x,)), (setindex!!, ()))
             vnt = VarNamedTuple()
 
-            vnt = @inferred(func!!(vnt, 1.0, @varname(x[1:2][1]), args...))
-            @test @inferred(getindex(vnt, @varname(x[1:2][1]))) == 1.0
-            @test @inferred(getindex(vnt, @varname(x[1]))) == 1.0
-            @test_throws BoundsError getindex(vnt, @varname(x[2]))
+            vnt = @inferred(func!!(vnt, 1.0, @vn(x[1:2][1]), args...))
+            @test @inferred(getindex(vnt, @vn(x[1:2][1]))) == 1.0
+            @test @inferred(getindex(vnt, @vn(x[1]))) == 1.0
+            @test_throws BoundsError getindex(vnt, @vn(x[2]))
             test_invariants(vnt)
 
             # Now set the second index
-            vnt = @inferred(func!!(vnt, 2.0, @varname(x[1:2][2]), args...))
-            @test @inferred(getindex(vnt, @varname(x[1:2][2]))) == 2.0
-            @test @inferred(getindex(vnt, @varname(x[2]))) == 2.0
+            vnt = @inferred(func!!(vnt, 2.0, @vn(x[1:2][2]), args...))
+            @test @inferred(getindex(vnt, @vn(x[1:2][2]))) == 2.0
+            @test @inferred(getindex(vnt, @vn(x[2]))) == 2.0
             test_invariants(vnt)
 
             # Check that the first index is still correct
-            @test @inferred(getindex(vnt, @varname(x[1]))) == 1.0
+            @test @inferred(getindex(vnt, @vn(x[1]))) == 1.0
             # Check that we can get both indices
-            @test @inferred(getindex(vnt, @varname(x[1:2]))) == [1.0, 2.0]
-            @test @inferred(getindex(vnt, @varname(x[:]))) == [1.0, 2.0]
-            @test @inferred(getindex(vnt, @varname(x))) == [1.0, 2.0]
+            @test @inferred(getindex(vnt, @vn(x[1:2]))) == [1.0, 2.0]
+            @test @inferred(getindex(vnt, @vn(x[:]))) == [1.0, 2.0]
+            @test @inferred(getindex(vnt, @vn(x))) == [1.0, 2.0]
 
-            @test keys(vnt) == [@varname(x[1]), @varname(x[2])]
+            @test keys(vnt) == [@vn(x[1]), @vn(x[2])]
             @test values(vnt) == [1.0, 2.0]
         end
     end
@@ -911,29 +911,29 @@ Base.size(st::SizedThing) = st.size
         vnt = VarNamedTuple()
         x = zeros(3)
 
-        vnt = @inferred(templated_setindex!!(vnt, 1.0, @varname(x[1:2][1]), x))
-        @test @inferred(getindex(vnt, @varname(x[1:2][1]))) == 1.0
-        @test @inferred(getindex(vnt, @varname(x[1]))) == 1.0
-        @test_throws BoundsError getindex(vnt, @varname(x[2]))
-        @test_throws BoundsError getindex(vnt, @varname(x[3]))
+        vnt = @inferred(templated_setindex!!(vnt, 1.0, @vn(x[1:2][1]), x))
+        @test @inferred(getindex(vnt, @vn(x[1:2][1]))) == 1.0
+        @test @inferred(getindex(vnt, @vn(x[1]))) == 1.0
+        @test_throws BoundsError getindex(vnt, @vn(x[2]))
+        @test_throws BoundsError getindex(vnt, @vn(x[3]))
         test_invariants(vnt)
 
         # Now set the second index
-        vnt = @inferred(templated_setindex!!(vnt, 2.0, @varname(x[end:end][1]), x))
-        @test @inferred(getindex(vnt, @varname(x[end:end][1]))) == 2.0
-        @test @inferred(getindex(vnt, @varname(x[3]))) == 2.0
+        vnt = @inferred(templated_setindex!!(vnt, 2.0, @vn(x[end:end][1]), x))
+        @test @inferred(getindex(vnt, @vn(x[end:end][1]))) == 2.0
+        @test @inferred(getindex(vnt, @vn(x[3]))) == 2.0
         test_invariants(vnt)
 
         # Check that the first index is still correct
-        @test @inferred(getindex(vnt, @varname(x[1]))) == 1.0
+        @test @inferred(getindex(vnt, @vn(x[1]))) == 1.0
         # Check that we can get both indices
-        @test @inferred(getindex(vnt, @varname(x[[1, 3]]))) == [1.0, 2.0]
+        @test @inferred(getindex(vnt, @vn(x[[1, 3]]))) == [1.0, 2.0]
         # Check that we can't get all three indices
-        @test_throws BoundsError getindex(vnt, @varname(x[1:3]))
-        @test_throws BoundsError getindex(vnt, @varname(x[:]))
-        @test_throws ArgumentError getindex(vnt, @varname(x))
+        @test_throws BoundsError getindex(vnt, @vn(x[1:3]))
+        @test_throws BoundsError getindex(vnt, @vn(x[:]))
+        @test_throws ArgumentError getindex(vnt, @vn(x))
 
-        @test keys(vnt) == [@varname(x[1]), @varname(x[3])]
+        @test keys(vnt) == [@vn(x[1]), @vn(x[3])]
         @test values(vnt) == [1.0, 2.0]
     end
 
@@ -947,7 +947,7 @@ Base.size(st::SizedThing) = st.size
         b = rand(3)
         c = (; d=[nothing, (; e=rand()), nothing])
         varnames_and_templates =
-            ((@varname(b[1]), b), (@varname(b[3]), b), (@varname(c.d[2].e), c))
+            ((@vn(b[1]), b), (@vn(b[3]), b), (@vn(c.d[2].e), c))
         possible_values = (missing, 1, -0.0, 0.0)
         for vn_template_set in Combinatorics.combinations(varnames_and_templates)
             valuesets1 = Combinatorics.with_replacement_combinations(
@@ -986,13 +986,13 @@ Base.size(st::SizedThing) = st.size
         expected_merge = VarNamedTuple()
         @test @inferred(merge(vnt1, vnt2)) == expected_merge
 
-        vnt1 = setindex!!(vnt1, 1.0, @varname(a))
-        vnt2 = setindex!!(vnt2, 2.0, @varname(b))
-        vnt1 = setindex!!(vnt1, 1, @varname(c))
-        vnt2 = setindex!!(vnt2, 2, @varname(c))
-        expected_merge = setindex!!(expected_merge, 1.0, @varname(a))
-        expected_merge = setindex!!(expected_merge, 2, @varname(c))
-        expected_merge = setindex!!(expected_merge, 2.0, @varname(b))
+        vnt1 = setindex!!(vnt1, 1.0, @vn(a))
+        vnt2 = setindex!!(vnt2, 2.0, @vn(b))
+        vnt1 = setindex!!(vnt1, 1, @vn(c))
+        vnt2 = setindex!!(vnt2, 2, @vn(c))
+        expected_merge = setindex!!(expected_merge, 1.0, @vn(a))
+        expected_merge = setindex!!(expected_merge, 2, @vn(c))
+        expected_merge = setindex!!(expected_merge, 2.0, @vn(b))
         @test @inferred(merge(vnt1, vnt2)) == expected_merge
         test_invariants(vnt1)
         test_invariants(vnt2)
@@ -1000,43 +1000,43 @@ Base.size(st::SizedThing) = st.size
         vnt1 = VarNamedTuple()
         vnt2 = VarNamedTuple()
         expected_merge = VarNamedTuple()
-        vnt1 = setindex!!(vnt1, [1], @varname(d.a))
-        vnt2 = setindex!!(vnt2, [2, 2], @varname(d.b))
-        vnt1 = setindex!!(vnt1, [1], @varname(d.c))
-        vnt2 = setindex!!(vnt2, [2, 2], @varname(d.c))
-        expected_merge = setindex!!(expected_merge, [1], @varname(d.a))
-        expected_merge = setindex!!(expected_merge, [2, 2], @varname(d.c))
-        expected_merge = setindex!!(expected_merge, [2, 2], @varname(d.b))
+        vnt1 = setindex!!(vnt1, [1], @vn(d.a))
+        vnt2 = setindex!!(vnt2, [2, 2], @vn(d.b))
+        vnt1 = setindex!!(vnt1, [1], @vn(d.c))
+        vnt2 = setindex!!(vnt2, [2, 2], @vn(d.c))
+        expected_merge = setindex!!(expected_merge, [1], @vn(d.a))
+        expected_merge = setindex!!(expected_merge, [2, 2], @vn(d.c))
+        expected_merge = setindex!!(expected_merge, [2, 2], @vn(d.b))
         @test @inferred(merge(vnt1, vnt2)) == expected_merge
 
         e = (; a=rand(11), b=[rand(20) for _ in 1:4])
-        vnt1 = templated_setindex!!(vnt1, 1, @varname(e.a[1]), e)
-        vnt2 = templated_setindex!!(vnt2, 2, @varname(e.a[2]), e)
-        expected_merge = templated_setindex!!(expected_merge, 1, @varname(e.a[1]), e)
-        expected_merge = setindex!!(expected_merge, 2, @varname(e.a[2]))
-        vnt1 = setindex!!(vnt1, 1, @varname(e.a[3]))
-        vnt2 = setindex!!(vnt2, 2, @varname(e.a[3]))
-        expected_merge = setindex!!(expected_merge, 2, @varname(e.a[3]))
+        vnt1 = templated_setindex!!(vnt1, 1, @vn(e.a[1]), e)
+        vnt2 = templated_setindex!!(vnt2, 2, @vn(e.a[2]), e)
+        expected_merge = templated_setindex!!(expected_merge, 1, @vn(e.a[1]), e)
+        expected_merge = setindex!!(expected_merge, 2, @vn(e.a[2]))
+        vnt1 = setindex!!(vnt1, 1, @vn(e.a[3]))
+        vnt2 = setindex!!(vnt2, 2, @vn(e.a[3]))
+        expected_merge = setindex!!(expected_merge, 2, @vn(e.a[3]))
         @test @inferred(merge(vnt1, vnt2)) == expected_merge
 
-        vnt1 = setindex!!(vnt1, fill(1, 4), @varname(e.a[7:10]))
-        vnt2 = setindex!!(vnt2, fill(2, 4), @varname(e.a[8:11]))
-        expected_merge = setindex!!(expected_merge, 1, @varname(e.a[7]))
-        expected_merge = setindex!!(expected_merge, fill(2, 4), @varname(e.a[8:11]))
+        vnt1 = setindex!!(vnt1, fill(1, 4), @vn(e.a[7:10]))
+        vnt2 = setindex!!(vnt2, fill(2, 4), @vn(e.a[8:11]))
+        expected_merge = setindex!!(expected_merge, 1, @vn(e.a[7]))
+        expected_merge = setindex!!(expected_merge, fill(2, 4), @vn(e.a[8:11]))
         @test @inferred(merge(vnt1, vnt2)) == expected_merge
 
-        vnt1 = templated_setindex!!(vnt1, 1, @varname(e.b[1][13]), e)
-        vnt2 = templated_setindex!!(vnt2, 2, @varname(e.b[2][13]), e)
-        expected_merge = templated_setindex!!(expected_merge, 1, @varname(e.b[1][13]), e)
-        expected_merge = templated_setindex!!(expected_merge, 2, @varname(e.b[2][13]), e)
-        vnt1 = templated_setindex!!(vnt1, 1, @varname(e.b[3][13]), e)
-        vnt2 = templated_setindex!!(vnt2, 2, @varname(e.b[3][13]), e)
-        expected_merge = templated_setindex!!(expected_merge, 2, @varname(e.b[3][13]), e)
+        vnt1 = templated_setindex!!(vnt1, 1, @vn(e.b[1][13]), e)
+        vnt2 = templated_setindex!!(vnt2, 2, @vn(e.b[2][13]), e)
+        expected_merge = templated_setindex!!(expected_merge, 1, @vn(e.b[1][13]), e)
+        expected_merge = templated_setindex!!(expected_merge, 2, @vn(e.b[2][13]), e)
+        vnt1 = templated_setindex!!(vnt1, 1, @vn(e.b[3][13]), e)
+        vnt2 = templated_setindex!!(vnt2, 2, @vn(e.b[3][13]), e)
+        expected_merge = templated_setindex!!(expected_merge, 2, @vn(e.b[3][13]), e)
         @test @inferred(merge(vnt1, vnt2)) == expected_merge
-        vnt1 = templated_setindex!!(vnt1, 1, @varname(e.b[4][13]), e)
-        vnt2 = templated_setindex!!(vnt2, 2, @varname(e.b[4][14]), e)
-        expected_merge = templated_setindex!!(expected_merge, 1, @varname(e.b[4][13]), e)
-        expected_merge = templated_setindex!!(expected_merge, 2, @varname(e.b[4][14]), e)
+        vnt1 = templated_setindex!!(vnt1, 1, @vn(e.b[4][13]), e)
+        vnt2 = templated_setindex!!(vnt2, 2, @vn(e.b[4][14]), e)
+        expected_merge = templated_setindex!!(expected_merge, 1, @vn(e.b[4][13]), e)
+        expected_merge = templated_setindex!!(expected_merge, 2, @vn(e.b[4][14]), e)
         @test @inferred(merge(vnt1, vnt2)) == expected_merge
 
         struct A
@@ -1050,10 +1050,10 @@ Base.size(st::SizedThing) = st.size
             # part of an ArrayLikeBlock was set, and then the merged result had ALBs from
             # both sides of the merge.
             for (vn, template) in
-                [(@varname(x[1:2]), zeros(2)), (@varname(x[1:5][1:2]), zeros(5))]
+                [(@vn(x[1:2]), zeros(2)), (@vn(x[1:5][1:2]), zeros(5))]
                 # Regardless of how we set it above, the VNT should always store it as
                 # x[1:2].
-                normalized_vn = @varname(x[1:2])
+                normalized_vn = @vn(x[1:2])
 
                 # Without templating.
                 vnt1 = @inferred(setindex!!(VarNamedTuple(), A(1.0), vn))
@@ -1083,8 +1083,8 @@ Base.size(st::SizedThing) = st.size
         end
 
         @testset "with sized things: different but overlapping indices" begin
-            vn1 = @varname(x[1:2])
-            vn2 = @varname(x[2:3])
+            vn1 = @vn(x[1:2])
+            vn2 = @vn(x[2:3])
 
             # Without templating.
             vnt1 = @inferred(setindex!!(VarNamedTuple(), A(1.0), vn1))
@@ -1122,18 +1122,18 @@ Base.size(st::SizedThing) = st.size
         d = (; d=fill(randn(20, 20), 4, 4))
         f = (; a=[(; b=(; c=fill(d, 4, 2)))])
         vnt1 = VarNamedTuple()
-        vnt1 = templated_setindex!!(vnt1, ["1", "1"], @varname(f.a[1].b.c[2, 2].d[1, 3:4]), f)
-        vnt2 = templated_setindex!!(vnt2, ["2", "2"], @varname(f.a[1].b.c[2, 2].d[1, 3:4]), f)
+        vnt1 = templated_setindex!!(vnt1, ["1", "1"], @vn(f.a[1].b.c[2, 2].d[1, 3:4]), f)
+        vnt2 = templated_setindex!!(vnt2, ["2", "2"], @vn(f.a[1].b.c[2, 2].d[1, 3:4]), f)
         expected_merge = setindex!!(
-            expected_merge, ["2", "2"], @varname(f.a[1].b.c[2, 2].d[1, 3:4])
+            expected_merge, ["2", "2"], @vn(f.a[1].b.c[2, 2].d[1, 3:4])
         )
-        vnt1 = setindex!!(vnt1, :1, @varname(f.a[1].b.c[3, 2].d[1, 1][14, 13]))
-        vnt2 = setindex!!(vnt2, :2, @varname(f.a[1].b.c[4, 2].d[1, 1][14, 13]))
+        vnt1 = setindex!!(vnt1, :1, @vn(f.a[1].b.c[3, 2].d[1, 1][14, 13]))
+        vnt2 = setindex!!(vnt2, :2, @vn(f.a[1].b.c[4, 2].d[1, 1][14, 13]))
         expected_merge = setindex!!(
-            expected_merge, :1, @varname(f.a[1].b.c[3, 2].d[1, 1][14, 13])
+            expected_merge, :1, @vn(f.a[1].b.c[3, 2].d[1, 1][14, 13])
         )
         expected_merge = setindex!!(
-            expected_merge, :2, @varname(f.a[1].b.c[4, 2].d[1, 1][14, 13])
+            expected_merge, :2, @vn(f.a[1].b.c[4, 2].d[1, 1][14, 13])
         )
         @test merge(vnt1, vnt2) == expected_merge
         test_invariants(vnt1)
@@ -1143,21 +1143,21 @@ Base.size(st::SizedThing) = st.size
 
     @testset "merging PartialArrays errors with different axes" begin
         @testset "different sizes" begin
-            vnt1 = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x[1]), zeros(1))
-            vnt2 = templated_setindex!!(VarNamedTuple(), 2.0, @varname(x[1]), zeros(2))
+            vnt1 = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x[1]), zeros(1))
+            vnt2 = templated_setindex!!(VarNamedTuple(), 2.0, @vn(x[1]), zeros(2))
             @test_throws ArgumentError merge(vnt1, vnt2)
 
-            vnt1 = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x[1]), zeros(1))
-            vnt2 = templated_setindex!!(VarNamedTuple(), 2.0, @varname(x[1]), zeros(1, 1))
+            vnt1 = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x[1]), zeros(1))
+            vnt2 = templated_setindex!!(VarNamedTuple(), 2.0, @vn(x[1]), zeros(1, 1))
             @test_throws ArgumentError merge(vnt1, vnt2)
         end
 
         @testset "different types" begin
-            vnt1 = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x[1]), zeros(1))
+            vnt1 = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x[1]), zeros(1))
             vnt2 = templated_setindex!!(
                 VarNamedTuple(),
                 2.0,
-                @varname(x[0]),
+                @vn(x[0]),
                 OA.OffsetArray(zeros(1), 0:0),
             )
             @test_throws ArgumentError merge(vnt1, vnt2)
@@ -1181,79 +1181,79 @@ Base.size(st::SizedThing) = st.size
         end
 
         @testset "same variable" begin
-            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x), NoTemplate())
-            test_must_not_overwrite(vnt, 2.0, @varname(x), NoTemplate())
+            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x), NoTemplate())
+            test_must_not_overwrite(vnt, 2.0, @vn(x), NoTemplate())
 
-            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x.a), NoTemplate())
-            test_must_not_overwrite(vnt, 2.0, @varname(x.a), NoTemplate())
+            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x.a), NoTemplate())
+            test_must_not_overwrite(vnt, 2.0, @vn(x.a), NoTemplate())
 
-            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x[1]), zeros(2))
-            test_must_not_overwrite(vnt, 2.0, @varname(x[1]), zeros(2))
+            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x[1]), zeros(2))
+            test_must_not_overwrite(vnt, 2.0, @vn(x[1]), zeros(2))
 
             # Different indices, but the same slot
-            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x[1]), zeros(2, 2))
-            test_must_not_overwrite(vnt, 2.0, @varname(x[1, 1]), zeros(2, 2))
+            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x[1]), zeros(2, 2))
+            test_must_not_overwrite(vnt, 2.0, @vn(x[1, 1]), zeros(2, 2))
         end
 
         @testset "setting a superset of an old variable" begin
-            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x.a), NoTemplate())
-            test_must_not_overwrite(vnt, 2.0, @varname(x), NoTemplate())
+            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x.a), NoTemplate())
+            test_must_not_overwrite(vnt, 2.0, @vn(x), NoTemplate())
 
-            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x[1]), zeros(2))
-            test_must_not_overwrite(vnt, 2.0, @varname(x), zeros(2))
+            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x[1]), zeros(2))
+            test_must_not_overwrite(vnt, 2.0, @vn(x), zeros(2))
 
-            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x[1]), zeros(2))
-            test_must_not_overwrite(vnt, [2.0, 3.0], @varname(x[1:2]), zeros(2))
+            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x[1]), zeros(2))
+            test_must_not_overwrite(vnt, [2.0, 3.0], @vn(x[1:2]), zeros(2))
 
-            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @varname(x[1]), zeros(2))
-            test_must_not_overwrite(vnt, [2.0, 3.0], @varname(x[:]), zeros(2))
+            vnt = templated_setindex!!(VarNamedTuple(), 1.0, @vn(x[1]), zeros(2))
+            test_must_not_overwrite(vnt, [2.0, 3.0], @vn(x[:]), zeros(2))
         end
 
         @testset "setting a subset of an old variable" begin
-            vnt = templated_setindex!!(VarNamedTuple(), [1.0, 2.0], @varname(x), zeros(2))
-            test_must_not_overwrite(vnt, 2.0, @varname(x[1]), zeros(2))
+            vnt = templated_setindex!!(VarNamedTuple(), [1.0, 2.0], @vn(x), zeros(2))
+            test_must_not_overwrite(vnt, 2.0, @vn(x[1]), zeros(2))
 
-            vnt = templated_setindex!!(VarNamedTuple(), [1.0, 2.0], @varname(x), zeros(2))
-            test_must_not_overwrite(vnt, 2.0, @varname(x[end]), zeros(2))
+            vnt = templated_setindex!!(VarNamedTuple(), [1.0, 2.0], @vn(x), zeros(2))
+            test_must_not_overwrite(vnt, 2.0, @vn(x[end]), zeros(2))
 
-            vnt = templated_setindex!!(VarNamedTuple(), [1.0, 2.0], @varname(x), zeros(2))
-            test_must_not_overwrite(vnt, [1.0, 2.0], @varname(x[1:2]), zeros(2))
+            vnt = templated_setindex!!(VarNamedTuple(), [1.0, 2.0], @vn(x), zeros(2))
+            test_must_not_overwrite(vnt, [1.0, 2.0], @vn(x[1:2]), zeros(2))
 
             vnt = templated_setindex!!(
                 VarNamedTuple(),
                 [1.0, 2.0],
-                @varname(x[1, :]),
+                @vn(x[1, :]),
                 zeros(2, 2),
             )
-            test_must_not_overwrite(vnt, [1.0, 2.0], @varname(x[:, 1]), zeros(2, 2))
+            test_must_not_overwrite(vnt, [1.0, 2.0], @vn(x[:, 1]), zeros(2, 2))
 
             vnt = templated_setindex!!(
                 VarNamedTuple(),
                 [1.0, 2.0],
-                @varname(x.a),
+                @vn(x.a),
                 (; a=zeros(2)),
             )
-            test_must_not_overwrite(vnt, [1.0, 2.0], @varname(x.a[1:2]), (; a=zeros(2)))
+            test_must_not_overwrite(vnt, [1.0, 2.0], @vn(x.a[1:2]), (; a=zeros(2)))
 
             vnt = templated_setindex!!(
                 VarNamedTuple(),
                 [1.0, 2.0],
-                @varname(x.a),
+                @vn(x.a),
                 (; a=zeros(2)),
             )
-            test_must_not_overwrite(vnt, 2.0, @varname(x.a[1]), (; a=zeros(2)))
+            test_must_not_overwrite(vnt, 2.0, @vn(x.a[1]), (; a=zeros(2)))
 
             vnt = templated_setindex!!(
                 VarNamedTuple(),
                 [1.0, 2.0],
-                @varname(x.a),
+                @vn(x.a),
                 (; a=zeros(2)),
             )
-            test_must_not_overwrite(vnt, 2.0, @varname(x.a[end]), (; a=zeros(2)))
+            test_must_not_overwrite(vnt, 2.0, @vn(x.a[end]), (; a=zeros(2)))
 
             vnt =
-                templated_setindex!!(VarNamedTuple(), (; a=1.0), @varname(x), NoTemplate())
-            test_must_not_overwrite(vnt, 2.0, @varname(x.a), NoTemplate())
+                templated_setindex!!(VarNamedTuple(), (; a=1.0), @vn(x), NoTemplate())
+            test_must_not_overwrite(vnt, 2.0, @vn(x.a), NoTemplate())
         end
 
         @testset "different sub-indices of the same slice" begin
@@ -1263,67 +1263,67 @@ Base.size(st::SizedThing) = st.size
             vnt = templated_setindex_no_overwrite!!(
                 VarNamedTuple(),
                 1.0,
-                @varname(x[1:2][1]),
+                @vn(x[1:2][1]),
                 x,
             )
-            vnt = templated_setindex_no_overwrite!!(vnt, 2.0, @varname(x[1:2][2]), x)
-            @test vnt[@varname(x)] == [1.0, 2.0]
+            vnt = templated_setindex_no_overwrite!!(vnt, 2.0, @vn(x[1:2][2]), x)
+            @test vnt[@vn(x)] == [1.0, 2.0]
 
             # But setting the SAME sub-index twice should still error.
             vnt2 = templated_setindex_no_overwrite!!(
                 VarNamedTuple(),
                 1.0,
-                @varname(x[1:2][1]),
+                @vn(x[1:2][1]),
                 x,
             )
-            test_must_not_overwrite(vnt2, 2.0, @varname(x[1:2][1]), x)
+            test_must_not_overwrite(vnt2, 2.0, @vn(x[1:2][1]), x)
 
             # Also test with a larger array and different slices.
             y = zeros(4)
             vnt3 = templated_setindex_no_overwrite!!(
                 VarNamedTuple(),
                 1.0,
-                @varname(y[1:3][1]),
+                @vn(y[1:3][1]),
                 y,
             )
-            vnt3 = templated_setindex_no_overwrite!!(vnt3, 2.0, @varname(y[1:3][2]), y)
-            test_must_not_overwrite(vnt3, [3.0, 4.0], @varname(y[1:3][2:3]), y)
-            vnt3 = templated_setindex_no_overwrite!!(vnt3, 3.0, @varname(y[1:3][3]), y)
-            @test vnt3[@varname(y[1:3])] == [1.0, 2.0, 3.0]
+            vnt3 = templated_setindex_no_overwrite!!(vnt3, 2.0, @vn(y[1:3][2]), y)
+            test_must_not_overwrite(vnt3, [3.0, 4.0], @vn(y[1:3][2:3]), y)
+            vnt3 = templated_setindex_no_overwrite!!(vnt3, 3.0, @vn(y[1:3][3]), y)
+            @test vnt3[@vn(y[1:3])] == [1.0, 2.0, 3.0]
             # Setting an already-set sub-index, or slice, should error.
-            test_must_not_overwrite(vnt3, 4.0, @varname(y[1:3][2]), y)
-            test_must_not_overwrite(vnt3, [4.0, 5.0], @varname(y[2:3][1:2]), y)
+            test_must_not_overwrite(vnt3, 4.0, @vn(y[1:3][2]), y)
+            test_must_not_overwrite(vnt3, [4.0, 5.0], @vn(y[2:3][1:2]), y)
 
             # Also try with indices of different slices
             z = zeros(3)
             vnt4 = templated_setindex_no_overwrite!!(
                 VarNamedTuple(),
                 [1.0, 2.0],
-                @varname(z[1:2]),
+                @vn(z[1:2]),
                 z,
             )
-            test_must_not_overwrite(vnt4, 3.0, @varname(z[2:3][1]), z)
+            test_must_not_overwrite(vnt4, 3.0, @vn(z[2:3][1]), z)
             # but you can set it if it's not overlapping
-            templated_setindex_no_overwrite!!(vnt4, 3.0, @varname(z[2:3][2]), z)
+            templated_setindex_no_overwrite!!(vnt4, 3.0, @vn(z[2:3][2]), z)
         end
     end
 
     @testset "subset" begin
         vnt = VarNamedTuple()
-        vnt = setindex!!(vnt, 1.0, @varname(a))
-        vnt = setindex!!(vnt, [1, 2, 3], @varname(b))
-        vnt = setindex!!(vnt, [10], @varname(c.x.y))
+        vnt = setindex!!(vnt, 1.0, @vn(a))
+        vnt = setindex!!(vnt, [1, 2, 3], @vn(b))
+        vnt = setindex!!(vnt, [10], @vn(c.x.y))
         d = randn(3)
-        vnt = templated_setindex!!(vnt, :1, @varname(d[1]), d)
-        vnt = setindex!!(vnt, :2, @varname(d[2]))
-        vnt = setindex!!(vnt, :3, @varname(d[3]))
+        vnt = templated_setindex!!(vnt, :1, @vn(d[1]), d)
+        vnt = setindex!!(vnt, :2, @vn(d[2]))
+        vnt = setindex!!(vnt, :3, @vn(d[3]))
         e = (; f=fill((; g=(; h=fill((; i=0.0), 2, 4, 1))), 3, 3))
-        vnt = templated_setindex!!(vnt, 2.0, @varname(e.f[3, 3].g.h[2, 4, 1].i), e)
+        vnt = templated_setindex!!(vnt, 2.0, @vn(e.f[3, 3].g.h[2, 4, 1].i), e)
         p = fill(zeros(4, 5, 14), 2, 2)
         vnt = templated_setindex!!(
             vnt,
             SizedThing((3, 1, 4)),
-            @varname(p[2, 1][2:4, 5:5, 11:14]),
+            @vn(p[2, 1][2:4, 5:5, 11:14]),
             p,
         )
         test_invariants(vnt)
@@ -1332,22 +1332,22 @@ Base.size(st::SizedThing) = st.size
         # return type always infers as VarNamedTuple. Improving this would require a
         # different implementation of subset.
         @test subset(vnt, VarName[]) == VarNamedTuple()
-        @test subset(vnt, (@varname(z),)) == VarNamedTuple()
-        @test subset(vnt, (@varname(d[4]),)) == VarNamedTuple()
-        @test subset(vnt, (@varname(d[1, 1]),)) == VarNamedTuple()
-        @test subset(vnt, [@varname(a)]) == VarNamedTuple(; a=1.0)
+        @test subset(vnt, (@vn(z),)) == VarNamedTuple()
+        @test subset(vnt, (@vn(d[4]),)) == VarNamedTuple()
+        @test subset(vnt, (@vn(d[1, 1]),)) == VarNamedTuple()
+        @test subset(vnt, [@vn(a)]) == VarNamedTuple(; a=1.0)
         begin
             # These are a bit annoying to write out as we need to build the expected output
             # manually
-            expected_vnt = setindex!!(VarNamedTuple(), [1, 2, 3], @varname(b))
-            expected_vnt = templated_setindex!!(expected_vnt, :1, @varname(d[1]), randn(3))
-            @test subset(vnt, [@varname(b), @varname(d[1])]) == expected_vnt
+            expected_vnt = setindex!!(VarNamedTuple(), [1, 2, 3], @vn(b))
+            expected_vnt = templated_setindex!!(expected_vnt, :1, @vn(d[1]), randn(3))
+            @test subset(vnt, [@vn(b), @vn(d[1])]) == expected_vnt
         end
         begin
             expected_vnt =
-                templated_setindex!!(VarNamedTuple(), :2, @varname(d[2]), randn(3))
-            expected_vnt = setindex!!(expected_vnt, :3, @varname(d[3]))
-            @test subset(vnt, [@varname(d[2:3])]) == expected_vnt
+                templated_setindex!!(VarNamedTuple(), :2, @vn(d[2]), randn(3))
+            expected_vnt = setindex!!(expected_vnt, :3, @vn(d[3]))
+            @test subset(vnt, [@vn(d[2:3])]) == expected_vnt
         end
         # For this one, we can't test exact equality because in the former case we
         # constructed a PartialArray by adding individual elements of d. In the latter
@@ -1356,42 +1356,42 @@ Base.size(st::SizedThing) = st.size
         # elements as true (and is thus conceptually the same as a full array).
         # We can however test that the underlying values are the same when we try to extract
         # them.
-        subsetted_d = subset(vnt, [@varname(d)])
-        expected_d = VarNamedTuple((@varname(d) => [:1, :2, :3],))
+        subsetted_d = subset(vnt, [@vn(d)])
+        expected_d = VarNamedTuple((@vn(d) => [:1, :2, :3],))
         for vn in [
-            @varname(d),
-            @varname(d[1]),
-            @varname(d[2]),
-            @varname(d[3]),
-            @varname(d[:]),
-            @varname(d[1:2]),
-            @varname(d[2:3])
+            @vn(d),
+            @vn(d[1]),
+            @vn(d[2]),
+            @vn(d[3]),
+            @vn(d[:]),
+            @vn(d[1:2]),
+            @vn(d[2:3])
         ]
             @test getindex(subsetted_d, vn) == getindex(expected_d, vn)
         end
 
-        @test subset(vnt, [@varname(c.x.y)]) == VarNamedTuple((@varname(c.x.y) => [10],))
-        @test subset(vnt, [@varname(c)]) == VarNamedTuple((@varname(c.x.y) => [10],))
+        @test subset(vnt, [@vn(c.x.y)]) == VarNamedTuple((@vn(c.x.y) => [10],))
+        @test subset(vnt, [@vn(c)]) == VarNamedTuple((@vn(c.x.y) => [10],))
         begin
             expected_vnt = templated_setindex!!(
                 VarNamedTuple(),
                 2.0,
-                @varname(e.f[3, 3].g.h[2, 4, 1].i),
+                @vn(e.f[3, 3].g.h[2, 4, 1].i),
                 e,
             )
-            @test subset(vnt, [@varname(e.f[3, 3].g.h[2, 4, 1].i)]) == expected_vnt
+            @test subset(vnt, [@vn(e.f[3, 3].g.h[2, 4, 1].i)]) == expected_vnt
         end
         begin
             expected_vnt = templated_setindex!!(
                 VarNamedTuple(),
                 SizedThing((3, 1, 4)),
-                @varname(p[2, 1][2:4, 5:5, 11:14]),
+                @vn(p[2, 1][2:4, 5:5, 11:14]),
                 p,
             )
-            @test subset(vnt, [@varname(p[2, 1][2:4, 5:5, 11:14])]) == expected_vnt
+            @test subset(vnt, [@vn(p[2, 1][2:4, 5:5, 11:14])]) == expected_vnt
         end
         # Cutting the last range a bit short should mean that nothing is returned.
-        @test subset(vnt, [@varname(p[2, 1][2:4, 5:5, 11:13])]) == VarNamedTuple()
+        @test subset(vnt, [@vn(p[2, 1][2:4, 5:5, 11:13])]) == VarNamedTuple()
     end
 
     @testset "keys and values" begin
@@ -1399,97 +1399,97 @@ Base.size(st::SizedThing) = st.size
         @test @inferred(keys(vnt)) == VarName[]
         @test @inferred(values(vnt)) == Any[]
 
-        vnt = setindex!!(vnt, 1.0, @varname(a))
+        vnt = setindex!!(vnt, 1.0, @vn(a))
         # TODO(mhauru) that the below passes @inferred, but any of the later ones don't.
         # We should improve type stability of keys().
-        @test @inferred(keys(vnt)) == [@varname(a)]
+        @test @inferred(keys(vnt)) == [@vn(a)]
         @test @inferred(values(vnt)) == [1.0]
 
-        vnt = setindex!!(vnt, [1, 2, 3], @varname(b))
-        @test keys(vnt) == [@varname(a), @varname(b)]
+        vnt = setindex!!(vnt, [1, 2, 3], @vn(b))
+        @test keys(vnt) == [@vn(a), @vn(b)]
         @test values(vnt) == [1.0, [1, 2, 3]]
 
-        vnt = setindex!!(vnt, 15, @varname(b[2]))
-        @test keys(vnt) == [@varname(a), @varname(b)]
+        vnt = setindex!!(vnt, 15, @vn(b[2]))
+        @test keys(vnt) == [@vn(a), @vn(b)]
         @test values(vnt) == [1.0, [1, 15, 3]]
 
-        vnt = setindex!!(vnt, [10], @varname(c.x.y))
-        @test keys(vnt) == [@varname(a), @varname(b), @varname(c.x.y)]
+        vnt = setindex!!(vnt, [10], @vn(c.x.y))
+        @test keys(vnt) == [@vn(a), @vn(b), @vn(c.x.y)]
         @test values(vnt) == [1.0, [1, 15, 3], [10]]
 
-        vnt = setindex!!(vnt, -1.0, @varname(d[4]))
-        @test keys(vnt) == [@varname(a), @varname(b), @varname(c.x.y), @varname(d[4])]
+        vnt = setindex!!(vnt, -1.0, @vn(d[4]))
+        @test keys(vnt) == [@vn(a), @vn(b), @vn(c.x.y), @vn(d[4])]
         @test values(vnt) == [1.0, [1, 15, 3], [10], -1.0]
 
-        vnt = setindex!!(vnt, 2.0, @varname(e.f[3, 3].g.h[2, 4, 1].i))
+        vnt = setindex!!(vnt, 2.0, @vn(e.f[3, 3].g.h[2, 4, 1].i))
         @test keys(vnt) == [
-            @varname(a),
-            @varname(b),
-            @varname(c.x.y),
-            @varname(d[4]),
-            @varname(e.f[3, 3].g.h[2, 4, 1].i),
+            @vn(a),
+            @vn(b),
+            @vn(c.x.y),
+            @vn(d[4]),
+            @vn(e.f[3, 3].g.h[2, 4, 1].i),
         ]
         @test values(vnt) == [1.0, [1, 15, 3], [10], -1.0, 2.0]
 
-        vnt = setindex!!(vnt, fill(1.0, 4), @varname(j[1:4]))
+        vnt = setindex!!(vnt, fill(1.0, 4), @vn(j[1:4]))
         @test keys(vnt) == [
-            @varname(a),
-            @varname(b),
-            @varname(c.x.y),
-            @varname(d[4]),
-            @varname(e.f[3, 3].g.h[2, 4, 1].i),
-            @varname(j[1]),
-            @varname(j[2]),
-            @varname(j[3]),
-            @varname(j[4]),
+            @vn(a),
+            @vn(b),
+            @vn(c.x.y),
+            @vn(d[4]),
+            @vn(e.f[3, 3].g.h[2, 4, 1].i),
+            @vn(j[1]),
+            @vn(j[2]),
+            @vn(j[3]),
+            @vn(j[4]),
         ]
         @test values(vnt) == [1.0, [1, 15, 3], [10], -1.0, 2.0, fill(1.0, 4)...]
 
-        vnt = setindex!!(vnt, "a", @varname(j[6]))
+        vnt = setindex!!(vnt, "a", @vn(j[6]))
         @test keys(vnt) == [
-            @varname(a),
-            @varname(b),
-            @varname(c.x.y),
-            @varname(d[4]),
-            @varname(e.f[3, 3].g.h[2, 4, 1].i),
-            @varname(j[1]),
-            @varname(j[2]),
-            @varname(j[3]),
-            @varname(j[4]),
-            @varname(j[6]),
+            @vn(a),
+            @vn(b),
+            @vn(c.x.y),
+            @vn(d[4]),
+            @vn(e.f[3, 3].g.h[2, 4, 1].i),
+            @vn(j[1]),
+            @vn(j[2]),
+            @vn(j[3]),
+            @vn(j[4]),
+            @vn(j[6]),
         ]
         @test values(vnt) == [1.0, [1, 15, 3], [10], -1.0, 2.0, fill(1.0, 4)..., "a"]
 
-        vnt = setindex!!(vnt, 1.0, @varname(n[2].a))
+        vnt = setindex!!(vnt, 1.0, @vn(n[2].a))
         @test keys(vnt) == [
-            @varname(a),
-            @varname(b),
-            @varname(c.x.y),
-            @varname(d[4]),
-            @varname(e.f[3, 3].g.h[2, 4, 1].i),
-            @varname(j[1]),
-            @varname(j[2]),
-            @varname(j[3]),
-            @varname(j[4]),
-            @varname(j[6]),
-            @varname(n[2].a),
+            @vn(a),
+            @vn(b),
+            @vn(c.x.y),
+            @vn(d[4]),
+            @vn(e.f[3, 3].g.h[2, 4, 1].i),
+            @vn(j[1]),
+            @vn(j[2]),
+            @vn(j[3]),
+            @vn(j[4]),
+            @vn(j[6]),
+            @vn(n[2].a),
         ]
         @test values(vnt) == [1.0, [1, 15, 3], [10], -1.0, 2.0, fill(1.0, 4)..., "a", 1.0]
 
-        vnt = setindex!!(vnt, SizedThing((3, 1, 4)), @varname(o[2:4, 5:5, 11:14]))
+        vnt = setindex!!(vnt, SizedThing((3, 1, 4)), @vn(o[2:4, 5:5, 11:14]))
         @test keys(vnt) == [
-            @varname(a),
-            @varname(b),
-            @varname(c.x.y),
-            @varname(d[4]),
-            @varname(e.f[3, 3].g.h[2, 4, 1].i),
-            @varname(j[1]),
-            @varname(j[2]),
-            @varname(j[3]),
-            @varname(j[4]),
-            @varname(j[6]),
-            @varname(n[2].a),
-            @varname(o[2:4, 5:5, 11:14]),
+            @vn(a),
+            @vn(b),
+            @vn(c.x.y),
+            @vn(d[4]),
+            @vn(e.f[3, 3].g.h[2, 4, 1].i),
+            @vn(j[1]),
+            @vn(j[2]),
+            @vn(j[3]),
+            @vn(j[4]),
+            @vn(j[6]),
+            @vn(n[2].a),
+            @vn(o[2:4, 5:5, 11:14]),
         ]
         @test values(vnt) == [
             1.0,
@@ -1503,21 +1503,21 @@ Base.size(st::SizedThing) = st.size
             SizedThing((3, 1, 4)),
         ]
 
-        vnt = setindex!!(vnt, SizedThing((3, 1, 4)), @varname(p[2, 1][2:4, 5:5, 11:14]))
+        vnt = setindex!!(vnt, SizedThing((3, 1, 4)), @vn(p[2, 1][2:4, 5:5, 11:14]))
         @test keys(vnt) == [
-            @varname(a),
-            @varname(b),
-            @varname(c.x.y),
-            @varname(d[4]),
-            @varname(e.f[3, 3].g.h[2, 4, 1].i),
-            @varname(j[1]),
-            @varname(j[2]),
-            @varname(j[3]),
-            @varname(j[4]),
-            @varname(j[6]),
-            @varname(n[2].a),
-            @varname(o[2:4, 5:5, 11:14]),
-            @varname(p[2, 1][2:4, 5:5, 11:14]),
+            @vn(a),
+            @vn(b),
+            @vn(c.x.y),
+            @vn(d[4]),
+            @vn(e.f[3, 3].g.h[2, 4, 1].i),
+            @vn(j[1]),
+            @vn(j[2]),
+            @vn(j[3]),
+            @vn(j[4]),
+            @vn(j[6]),
+            @vn(n[2].a),
+            @vn(o[2:4, 5:5, 11:14]),
+            @vn(p[2, 1][2:4, 5:5, 11:14]),
         ]
         @test values(vnt) == [
             1.0,
@@ -1541,35 +1541,35 @@ Base.size(st::SizedThing) = st.size
         vnt = VarNamedTuple()
         @test @inferred(length(vnt)) == 0
 
-        vnt = setindex!!(vnt, 1.0, @varname(a))
+        vnt = setindex!!(vnt, 1.0, @vn(a))
         @test @inferred(length(vnt)) == 1
 
-        vnt = setindex!!(vnt, [1, 2, 3], @varname(b))
+        vnt = setindex!!(vnt, [1, 2, 3], @vn(b))
         @test @inferred(length(vnt)) == 2
 
-        vnt = setindex!!(vnt, 15, @varname(b[2]))
+        vnt = setindex!!(vnt, 15, @vn(b[2]))
         @test @inferred(length(vnt)) == 2
 
-        vnt = setindex!!(vnt, [10, 11], @varname(c.x.y))
+        vnt = setindex!!(vnt, [10, 11], @vn(c.x.y))
         @test @inferred(length(vnt)) == 3
 
-        vnt = setindex!!(vnt, -1.0, @varname(d[4]))
+        vnt = setindex!!(vnt, -1.0, @vn(d[4]))
         @test @inferred(length(vnt)) == 4 broken = inference_broken
 
-        vnt = setindex!!(vnt, ["a", "b"], @varname(d[1:2]))
+        vnt = setindex!!(vnt, ["a", "b"], @vn(d[1:2]))
         @test @inferred(length(vnt)) == 6 broken = inference_broken
 
-        vnt = setindex!!(vnt, 2.0, @varname(e.f[3].g.h[2].i))
-        vnt = setindex!!(vnt, 3.0, @varname(e.f[3].g.h[2].j))
+        vnt = setindex!!(vnt, 2.0, @vn(e.f[3].g.h[2].i))
+        vnt = setindex!!(vnt, 3.0, @vn(e.f[3].g.h[2].j))
         @test @inferred(length(vnt)) == 8 broken = inference_broken
 
-        vnt = setindex!!(vnt, SizedThing((3, 2)), @varname(x[1, 2:4, 2, 1:2, 3]))
+        vnt = setindex!!(vnt, SizedThing((3, 2)), @vn(x[1, 2:4, 2, 1:2, 3]))
         @test @inferred(length(vnt)) == 14 broken = inference_broken
 
-        vnt = setindex!!(vnt, SizedThing((3, 2)), @varname(x[1, 4:6, 2, 1:2, 3]))
+        vnt = setindex!!(vnt, SizedThing((3, 2)), @vn(x[1, 4:6, 2, 1:2, 3]))
         @test @inferred(length(vnt)) == 14 broken = inference_broken
 
-        vnt = setindex!!(vnt, [:a, :b], @varname(y[4][3][2][1:2]))
+        vnt = setindex!!(vnt, [:a, :b], @vn(y[4][3][2][1:2]))
         @test @inferred(length(vnt)) == 16 broken = inference_broken
         test_invariants(vnt)
     end
@@ -1580,71 +1580,71 @@ Base.size(st::SizedThing) = st.size
         # 1) isempty gives the expected results:
         vnt = VarNamedTuple()
         @test @inferred(isempty(vnt)) == true
-        vnt = setindex!!(vnt, 1.0, @varname(a))
+        vnt = setindex!!(vnt, 1.0, @vn(a))
         @test @inferred(isempty(vnt)) == false
         test_invariants(vnt)
 
         # Setting an empty value inside a VNT doesn't mean that the VNT is empty
         vnt = VarNamedTuple()
-        vnt = templated_setindex!!(vnt, [], @varname(a[1]), zeros(1))
+        vnt = templated_setindex!!(vnt, [], @vn(a[1]), zeros(1))
         @test @inferred(isempty(vnt)) == false
         test_invariants(vnt)
 
         # 2) empty!! keeps PartialArrays in place:
         vnt = VarNamedTuple()
-        vnt = @inferred(templated_setindex!!(vnt, [1, 2, 3], @varname(a[1:3]), zeros(4)))
+        vnt = @inferred(templated_setindex!!(vnt, [1, 2, 3], @vn(a[1:3]), zeros(4)))
         vnt = @inferred(empty!!(vnt))
-        @test !haskey(vnt, @varname(a[1]))
-        @test !haskey(vnt, @varname(a[1:3]))
-        @test !haskey(vnt, @varname(a))
+        @test !haskey(vnt, @vn(a[1]))
+        @test !haskey(vnt, @vn(a[1:3]))
+        @test !haskey(vnt, @vn(a))
         # It's an empty PartialArray now, so attempting to extract anything will fail
-        @test_throws BoundsError getindex(vnt, @varname(a[1]))
-        @test_throws BoundsError getindex(vnt, @varname(a[1:3]))
-        @test_throws ArgumentError getindex(vnt, @varname(a))
+        @test_throws BoundsError getindex(vnt, @vn(a[1]))
+        @test_throws BoundsError getindex(vnt, @vn(a[1:3]))
+        @test_throws ArgumentError getindex(vnt, @vn(a))
         # but checking it explicitly, it should still be there
         @test haskey(vnt.data, :a)
         @test vnt.data.a isa PartialArray
         @test !any(vnt.data.a.mask)
         # We can set data back into it and it will reuse the same template
-        vnt = @inferred(setindex!!(vnt, [1, 2, 3], @varname(a[2:4])))
-        @test @inferred(getindex(vnt, @varname(a[2:4]))) == [1, 2, 3]
-        @test haskey(vnt, @varname(a[2:4]))
-        @test !haskey(vnt, @varname(a[1]))
+        vnt = @inferred(setindex!!(vnt, [1, 2, 3], @vn(a[2:4])))
+        @test @inferred(getindex(vnt, @vn(a[2:4]))) == [1, 2, 3]
+        @test haskey(vnt, @vn(a[2:4]))
+        @test !haskey(vnt, @vn(a[1]))
         test_invariants(vnt)
     end
 
     @testset "densification" begin
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[1, 1])))
-        @test @inferred(getindex(vnt, @varname(a.b[1].c))) == fill(1.0, (1, 1))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[1, 1])))
+        @test @inferred(getindex(vnt, @vn(a.b[1].c))) == fill(1.0, (1, 1))
         test_invariants(vnt)
 
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[1, 1])))
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[1, 2])))
-        @test @inferred(getindex(vnt, @varname(a.b[1].c))) == fill(1.0, (1, 2))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[1, 1])))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[1, 2])))
+        @test @inferred(getindex(vnt, @vn(a.b[1].c))) == fill(1.0, (1, 2))
         test_invariants(vnt)
 
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[1, 1])))
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[2, 1])))
-        @test @inferred(getindex(vnt, @varname(a.b[1].c))) == fill(1.0, (2, 1))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[1, 1])))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[2, 1])))
+        @test @inferred(getindex(vnt, @vn(a.b[1].c))) == fill(1.0, (2, 1))
         test_invariants(vnt)
 
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[1, 1])))
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[1, 2])))
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[2, 1])))
-        @test_throws ArgumentError @inferred(getindex(vnt, @varname(a.b[1].c)))
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[2, 2])))
-        @test @inferred(getindex(vnt, @varname(a.b[1].c))) == fill(1.0, (2, 2))
-        vnt = @inferred(setindex!!(vnt, 1.0, @varname(a.b[1].c[3, 3])))
-        @test_throws ArgumentError @inferred(getindex(vnt, @varname(a.b[1].c)))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[1, 1])))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[1, 2])))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[2, 1])))
+        @test_throws ArgumentError @inferred(getindex(vnt, @vn(a.b[1].c)))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[2, 2])))
+        @test @inferred(getindex(vnt, @vn(a.b[1].c))) == fill(1.0, (2, 2))
+        vnt = @inferred(setindex!!(vnt, 1.0, @vn(a.b[1].c[3, 3])))
+        @test_throws ArgumentError @inferred(getindex(vnt, @vn(a.b[1].c)))
         test_invariants(vnt)
 
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, SizedThing((2,)), @varname(x[1:2])))
-        @test_throws ArgumentError @inferred(getindex(vnt, @varname(x)))
+        vnt = @inferred(setindex!!(vnt, SizedThing((2,)), @vn(x[1:2])))
+        @test_throws ArgumentError @inferred(getindex(vnt, @vn(x)))
         test_invariants(vnt)
     end
 
@@ -1656,23 +1656,23 @@ Base.size(st::SizedThing) = st.size
             range of indices.
             """)
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, SizedThing((3,)), @varname(x[2:4])))
+        vnt = @inferred(setindex!!(vnt, SizedThing((3,)), @vn(x[2:4])))
         test_invariants(vnt)
-        @test haskey(vnt, @varname(x[2:4]))
-        @test @inferred(getindex(vnt, @varname(x[2:4]))) == SizedThing((3,))
-        @test !haskey(vnt, @varname(x[2:3]))
-        @test_throws expected_err getindex(vnt, @varname(x[2:3]))
-        @test !haskey(vnt, @varname(x[3]))
-        @test_throws expected_err getindex(vnt, @varname(x[3]))
-        @test !haskey(vnt, @varname(x[1]))
-        @test !haskey(vnt, @varname(x[5]))
-        vnt = setindex!!(vnt, 1.0, @varname(x[1]))
-        vnt = setindex!!(vnt, 1.0, @varname(x[5]))
+        @test haskey(vnt, @vn(x[2:4]))
+        @test @inferred(getindex(vnt, @vn(x[2:4]))) == SizedThing((3,))
+        @test !haskey(vnt, @vn(x[2:3]))
+        @test_throws expected_err getindex(vnt, @vn(x[2:3]))
+        @test !haskey(vnt, @vn(x[3]))
+        @test_throws expected_err getindex(vnt, @vn(x[3]))
+        @test !haskey(vnt, @vn(x[1]))
+        @test !haskey(vnt, @vn(x[5]))
+        vnt = setindex!!(vnt, 1.0, @vn(x[1]))
+        vnt = setindex!!(vnt, 1.0, @vn(x[5]))
         test_invariants(vnt)
-        @test haskey(vnt, @varname(x[1]))
-        @test haskey(vnt, @varname(x[5]))
-        @test_throws expected_err getindex(vnt, @varname(x[1:4]))
-        @test_throws expected_err getindex(vnt, @varname(x[2:5]))
+        @test haskey(vnt, @vn(x[1]))
+        @test haskey(vnt, @vn(x[5]))
+        @test_throws expected_err getindex(vnt, @vn(x[1:4]))
+        @test_throws expected_err getindex(vnt, @vn(x[2:5]))
 
         # Setting any of these indices should remove the block variable x[2:4].
         @testset "index = $index" for index in (2, 3, 4, 2:3, 3:5)
@@ -1683,19 +1683,19 @@ Base.size(st::SizedThing) = st.size
                 (fill(2.0, length(index)), SizedThing((length(index),)))
             end
             @testset "val = $val" for val in vals
-                vn = @varname(x[index])
+                vn = @vn(x[index])
                 vnt2 = copy(vnt)
                 vnt2 = setindex!!(vnt2, val, vn)
                 test_invariants(vnt)
-                @test !haskey(vnt2, @varname(x[2:4]))
-                @test_throws BoundsError getindex(vnt2, @varname(x[2:4]))
+                @test !haskey(vnt2, @vn(x[2:4]))
+                @test_throws BoundsError getindex(vnt2, @vn(x[2:4]))
                 other_index = index in (2, 2:3) ? 4 : 2
-                @test !haskey(vnt2, @varname(x[other_index]))
-                @test_throws BoundsError getindex(vnt2, @varname(x[other_index]))
+                @test !haskey(vnt2, @vn(x[other_index]))
+                @test_throws BoundsError getindex(vnt2, @vn(x[other_index]))
                 @test haskey(vnt2, vn)
                 @test getindex(vnt2, vn) == val
-                @test haskey(vnt2, @varname(x[1]))
-                @test_throws BoundsError getindex(vnt2, @varname(x[1:4]))
+                @test haskey(vnt2, @vn(x[1]))
+                @test_throws BoundsError getindex(vnt2, @vn(x[1:4]))
             end
         end
 
@@ -1703,68 +1703,68 @@ Base.size(st::SizedThing) = st.size
         # blocks work too.
         val = SizedThing((2, 2))
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, val, @varname(y.z[1:2, 1:2])))
+        vnt = @inferred(setindex!!(vnt, val, @vn(y.z[1:2, 1:2])))
         test_invariants(vnt)
-        @test haskey(vnt, @varname(y.z[1:2, 1:2]))
-        @test @inferred(getindex(vnt, @varname(y.z[1:2, 1:2]))) == val
-        @test !haskey(vnt, @varname(y.z[1, 1]))
-        @test_throws expected_err getindex(vnt, @varname(y.z[1, 1]))
+        @test haskey(vnt, @vn(y.z[1:2, 1:2]))
+        @test @inferred(getindex(vnt, @vn(y.z[1:2, 1:2]))) == val
+        @test !haskey(vnt, @vn(y.z[1, 1]))
+        @test_throws expected_err getindex(vnt, @vn(y.z[1, 1]))
 
-        vnt = @inferred(setindex!!(vnt, val, @varname(y.z[2:3, 2:3])))
+        vnt = @inferred(setindex!!(vnt, val, @vn(y.z[2:3, 2:3])))
         test_invariants(vnt)
-        @test haskey(vnt, @varname(y.z[2:3, 2:3]))
-        @test @inferred(getindex(vnt, @varname(y.z[2:3, 2:3]))) == val
-        @test !haskey(vnt, @varname(y.z[1:2, 1:2]))
-        @test_throws BoundsError getindex(vnt, @varname(y.z[1:2, 1:2]))
+        @test haskey(vnt, @vn(y.z[2:3, 2:3]))
+        @test @inferred(getindex(vnt, @vn(y.z[2:3, 2:3]))) == val
+        @test !haskey(vnt, @vn(y.z[1:2, 1:2]))
+        @test_throws BoundsError getindex(vnt, @vn(y.z[1:2, 1:2]))
 
-        vnt = @inferred(setindex!!(vnt, val, @varname(y.z[4:5, 2:3])))
+        vnt = @inferred(setindex!!(vnt, val, @vn(y.z[4:5, 2:3])))
         test_invariants(vnt)
-        @test haskey(vnt, @varname(y.z[2:3, 2:3]))
-        @test @inferred(getindex(vnt, @varname(y.z[2:3, 2:3]))) == val
-        @test haskey(vnt, @varname(y.z[4:5, 2:3]))
-        @test @inferred(getindex(vnt, @varname(y.z[4:5, 2:3]))) == val
+        @test haskey(vnt, @vn(y.z[2:3, 2:3]))
+        @test @inferred(getindex(vnt, @vn(y.z[2:3, 2:3]))) == val
+        @test haskey(vnt, @vn(y.z[4:5, 2:3]))
+        @test @inferred(getindex(vnt, @vn(y.z[4:5, 2:3]))) == val
 
         # A lot like above, but with extra indices that are not ranges.
         val = SizedThing((2, 2))
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, val, @varname(y.z[2, 1:2, 3, 1:2, 4])))
+        vnt = @inferred(setindex!!(vnt, val, @vn(y.z[2, 1:2, 3, 1:2, 4])))
         test_invariants(vnt)
-        @test haskey(vnt, @varname(y.z[2, 1:2, 3, 1:2, 4]))
-        @test @inferred(getindex(vnt, @varname(y.z[2, 1:2, 3, 1:2, 4]))) == val
-        @test !haskey(vnt, @varname(y.z[2, 1, 3, 1, 4]))
-        @test_throws expected_err getindex(vnt, @varname(y.z[2, 1, 3, 1, 4]))
+        @test haskey(vnt, @vn(y.z[2, 1:2, 3, 1:2, 4]))
+        @test @inferred(getindex(vnt, @vn(y.z[2, 1:2, 3, 1:2, 4]))) == val
+        @test !haskey(vnt, @vn(y.z[2, 1, 3, 1, 4]))
+        @test_throws expected_err getindex(vnt, @vn(y.z[2, 1, 3, 1, 4]))
 
-        vnt = @inferred(setindex!!(vnt, val, @varname(y.z[2, 2:3, 3, 2:3, 4])))
+        vnt = @inferred(setindex!!(vnt, val, @vn(y.z[2, 2:3, 3, 2:3, 4])))
         test_invariants(vnt)
-        @test haskey(vnt, @varname(y.z[2, 2:3, 3, 2:3, 4]))
-        @test @inferred(getindex(vnt, @varname(y.z[2, 2:3, 3, 2:3, 4]))) == val
-        @test !haskey(vnt, @varname(y.z[2, 1:2, 3, 1:2, 4]))
-        @test_throws BoundsError getindex(vnt, @varname(y.z[2, 1:2, 3, 1:2, 4]))
+        @test haskey(vnt, @vn(y.z[2, 2:3, 3, 2:3, 4]))
+        @test @inferred(getindex(vnt, @vn(y.z[2, 2:3, 3, 2:3, 4]))) == val
+        @test !haskey(vnt, @vn(y.z[2, 1:2, 3, 1:2, 4]))
+        @test_throws BoundsError getindex(vnt, @vn(y.z[2, 1:2, 3, 1:2, 4]))
 
-        vnt = @inferred(setindex!!(vnt, val, @varname(y.z[3, 2:3, 3, 2:3, 4])))
+        vnt = @inferred(setindex!!(vnt, val, @vn(y.z[3, 2:3, 3, 2:3, 4])))
         test_invariants(vnt)
-        @test haskey(vnt, @varname(y.z[2, 2:3, 3, 2:3, 4]))
-        @test @inferred(getindex(vnt, @varname(y.z[2, 2:3, 3, 2:3, 4]))) == val
-        @test haskey(vnt, @varname(y.z[3, 2:3, 3, 2:3, 4]))
+        @test haskey(vnt, @vn(y.z[2, 2:3, 3, 2:3, 4]))
+        @test @inferred(getindex(vnt, @vn(y.z[2, 2:3, 3, 2:3, 4]))) == val
+        @test haskey(vnt, @vn(y.z[3, 2:3, 3, 2:3, 4]))
         # Type inference fails on this one for Julia versions < 1.11
-        @test @inferred(getindex(vnt, @varname(y.z[3, 2:3, 3, 2:3, 4]))) == val
+        @test @inferred(getindex(vnt, @vn(y.z[3, 2:3, 3, 2:3, 4]))) == val
     end
 
     @testset "map and friends" begin
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, 1, @varname(a)))
-        vnt = @inferred(setindex!!(vnt, [2, 2], @varname(b[1:2])))
-        vnt = @inferred(setindex!!(vnt, [3.0], @varname(c.d)))
-        vnt = @inferred(setindex!!(vnt, "a", @varname(e.f[3].g.h[2].i)))
+        vnt = @inferred(setindex!!(vnt, 1, @vn(a)))
+        vnt = @inferred(setindex!!(vnt, [2, 2], @vn(b[1:2])))
+        vnt = @inferred(setindex!!(vnt, [3.0], @vn(c.d)))
+        vnt = @inferred(setindex!!(vnt, "a", @vn(e.f[3].g.h[2].i)))
         # The below can't be type stable because the element type of `h` depends on whether
         # we are setting `h[2].j` (which overwrites the earlier `h[2]`) or some other
         # `h[index].j` (which would leave both `h[2].i` and `h[index].j` in the same array).
-        vnt = setindex!!(vnt, 5.0, @varname(e.f[3].g.h[2].j))
+        vnt = setindex!!(vnt, 5.0, @vn(e.f[3].g.h[2].j))
         vnt =
-            @inferred(setindex!!(vnt, SizedThing((2, 2)), @varname(y.z[3, 2:3, 3, 2:3, 4])))
+            @inferred(setindex!!(vnt, SizedThing((2, 2)), @vn(y.z[3, 2:3, 3, 2:3, 4])))
         vnt =
-            @inferred(templated_setindex!!(vnt, SizedThing((2,)), @varname(v[:]), randn(2)))
-        vnt = @inferred(setindex!!(vnt, "", @varname(w[4][3][2, 1])))
+            @inferred(templated_setindex!!(vnt, SizedThing((2,)), @vn(v[:]), randn(2)))
+        vnt = @inferred(setindex!!(vnt, "", @vn(w[4][3][2, 1])))
         test_invariants(vnt)
 
         struct AnotherSizedThing{T<:Tuple}
@@ -1808,15 +1808,15 @@ Base.size(st::SizedThing) = st.size
         )
         key_reduction = mapreduce(pair -> pair.first, vcat, vnt; init=Any[])
         @test key_reduction == vcat(
-            @varname(a),
-            @varname(b[1]),
-            @varname(b[2]),
-            @varname(c.d),
-            @varname(e.f[3].g.h[2].i),
-            @varname(e.f[3].g.h[2].j),
-            @varname(y.z[3, 2:3, 3, 2:3, 4]),
-            @varname(v[:]),
-            @varname(w[4][3][2, 1]),
+            @vn(a),
+            @vn(b[1]),
+            @vn(b[2]),
+            @vn(c.d),
+            @vn(e.f[3].g.h[2].i),
+            @vn(e.f[3].g.h[2].j),
+            @vn(y.z[3, 2:3, 3, 2:3, 4]),
+            @vn(v[:]),
+            @vn(w[4][3][2, 1]),
         )
 
         call_counter = 0
@@ -1844,90 +1844,90 @@ Base.size(st::SizedThing) = st.size
         @test call_counter == length(keys(vnt))
         @test vnt_mapped == map_values!!(f_val, copy(vnt))
         test_invariants(vnt_mapped)
-        @test @inferred(getindex(vnt_mapped, @varname(a))) == 11
-        @test @inferred(getindex(vnt_mapped, @varname(b[1:2]))) == [12, 12]
-        @test @inferred(getindex(vnt_mapped, @varname(c.d))) == [2.0]
-        @test @inferred(getindex(vnt_mapped, @varname(e.f[3].g.h[2].i))) == "ab"
-        @test @inferred(getindex(vnt_mapped, @varname(e.f[3].g.h[2].j))) == 6.0
-        @test @inferred(getindex(vnt_mapped, @varname(y.z[3, 2:3, 3, 2:3, 4]))) ==
+        @test @inferred(getindex(vnt_mapped, @vn(a))) == 11
+        @test @inferred(getindex(vnt_mapped, @vn(b[1:2]))) == [12, 12]
+        @test @inferred(getindex(vnt_mapped, @vn(c.d))) == [2.0]
+        @test @inferred(getindex(vnt_mapped, @vn(e.f[3].g.h[2].i))) == "ab"
+        @test @inferred(getindex(vnt_mapped, @vn(e.f[3].g.h[2].j))) == 6.0
+        @test @inferred(getindex(vnt_mapped, @vn(y.z[3, 2:3, 3, 2:3, 4]))) ==
               AnotherSizedThing((2, 2))
-        @test @inferred(getindex(vnt_mapped, @varname(v[:]))) == AnotherSizedThing((2,))
-        @test @inferred(getindex(vnt_mapped, @varname(w[4][3][2, 1]))) == "b"
+        @test @inferred(getindex(vnt_mapped, @vn(v[:]))) == AnotherSizedThing((2,))
+        @test @inferred(getindex(vnt_mapped, @vn(w[4][3][2, 1]))) == "b"
 
         call_counter = 0
         vnt_applied = copy(vnt)
-        vnt_applied = @inferred(apply!!(f_val, vnt_applied, @varname(a)))
+        vnt_applied = @inferred(apply!!(f_val, vnt_applied, @vn(a)))
         @test call_counter == 1
         test_invariants(vnt_applied)
-        @test @inferred(getindex(vnt_applied, @varname(a))) == 11
-        @test @inferred(getindex(vnt_applied, @varname(b[1:2]))) == [2, 2]
+        @test @inferred(getindex(vnt_applied, @vn(a))) == 11
+        @test @inferred(getindex(vnt_applied, @vn(b[1:2]))) == [2, 2]
 
-        vnt_applied = @inferred(apply!!(f_val, vnt_applied, @varname(b[1:2])))
+        vnt_applied = @inferred(apply!!(f_val, vnt_applied, @vn(b[1:2])))
         # Unlike map_pairs!!, apply!! operates on the whole value at once, rather than
         # element-wise, so this is only one more call.
         @test call_counter == 2
         test_invariants(vnt_applied)
-        @test @inferred(getindex(vnt_applied, @varname(a))) == 11
-        @test @inferred(getindex(vnt_applied, @varname(b[1:2]))) == [12, 12]
+        @test @inferred(getindex(vnt_applied, @vn(a))) == 11
+        @test @inferred(getindex(vnt_applied, @vn(b[1:2]))) == [12, 12]
 
-        vnt_applied = @inferred(apply!!(f_val, vnt_applied, @varname(c.d)))
+        vnt_applied = @inferred(apply!!(f_val, vnt_applied, @vn(c.d)))
         @test call_counter == 3
         test_invariants(vnt_applied)
-        @test @inferred(getindex(vnt_applied, @varname(c.d))) == [2.0]
+        @test @inferred(getindex(vnt_applied, @vn(c.d))) == [2.0]
 
         vnt_applied = begin
             # The @inferred fails on Julia 1.10.
             @static if VERSION < v"1.11"
-                apply!!(f_val, vnt_applied, @varname(e.f[3].g.h[2].i))
+                apply!!(f_val, vnt_applied, @vn(e.f[3].g.h[2].i))
             else
-                @inferred(apply!!(f_val, vnt_applied, @varname(e.f[3].g.h[2].i)))
+                @inferred(apply!!(f_val, vnt_applied, @vn(e.f[3].g.h[2].i)))
             end
         end
         @test call_counter == 4
         test_invariants(vnt_applied)
-        @test @inferred(getindex(vnt_applied, @varname(e.f[3].g.h[2].i))) == "ab"
-        @test @inferred(getindex(vnt_applied, @varname(e.f[3].g.h[2].j))) == 5.0
+        @test @inferred(getindex(vnt_applied, @vn(e.f[3].g.h[2].i))) == "ab"
+        @test @inferred(getindex(vnt_applied, @vn(e.f[3].g.h[2].j))) == 5.0
 
         vnt_applied = begin
             # The @inferred fails on Julia 1.10.
             @static if VERSION < v"1.11"
-                apply!!(f_val, vnt_applied, @varname(e.f[3].g.h[2].j))
+                apply!!(f_val, vnt_applied, @vn(e.f[3].g.h[2].j))
             else
-                @inferred(apply!!(f_val, vnt_applied, @varname(e.f[3].g.h[2].j)))
+                @inferred(apply!!(f_val, vnt_applied, @vn(e.f[3].g.h[2].j)))
             end
         end
         @test call_counter == 5
         test_invariants(vnt_applied)
-        @test @inferred(getindex(vnt_applied, @varname(e.f[3].g.h[2].j))) == 6.0
+        @test @inferred(getindex(vnt_applied, @vn(e.f[3].g.h[2].j))) == 6.0
 
         # This can't be type stable because y.z might have many elements set, and we can't
         # know at compile time that this sets the only one, thus allowing the element type
         # to be AnotherSizedThing.
-        vnt_applied = apply!!(f_val, vnt_applied, @varname(y.z[3, 2:3, 3, 2:3, 4]))
+        vnt_applied = apply!!(f_val, vnt_applied, @vn(y.z[3, 2:3, 3, 2:3, 4]))
         @test call_counter == 6
         test_invariants(vnt_applied)
-        @test @inferred(getindex(vnt_applied, @varname(y.z[3, 2:3, 3, 2:3, 4]))) ==
+        @test @inferred(getindex(vnt_applied, @vn(y.z[3, 2:3, 3, 2:3, 4]))) ==
               AnotherSizedThing((2, 2))
 
-        vnt_applied = apply!!(f_val, vnt_applied, @varname(v[:]))
+        vnt_applied = apply!!(f_val, vnt_applied, @vn(v[:]))
         @test call_counter == 7
         test_invariants(vnt_applied)
-        @test @inferred(getindex(vnt_applied, @varname(v[:]))) == AnotherSizedThing((2,))
+        @test @inferred(getindex(vnt_applied, @vn(v[:]))) == AnotherSizedThing((2,))
 
-        vnt_applied = @inferred(apply!!(f_val, vnt_applied, @varname(w[4][3][2, 1])))
+        vnt_applied = @inferred(apply!!(f_val, vnt_applied, @vn(w[4][3][2, 1])))
         @test call_counter == 8
         test_invariants(vnt_applied)
-        @test @inferred(getindex(vnt_applied, @varname(w[4][3][2, 1]))) == "b"
+        @test @inferred(getindex(vnt_applied, @vn(w[4][3][2, 1]))) == "b"
 
         # map a function that maps every key => value pair to key => key.
         # For this, use a simpler VarNamedTuple, because block variables don't work with
         # this mapping function. It also allows us to check type stability.
         vnt = VarNamedTuple()
-        vnt = @inferred(setindex!!(vnt, 1, @varname(a)))
-        vnt = @inferred(setindex!!(vnt, 2, @varname(b[2])))
-        vnt = @inferred(setindex!!(vnt, [3.0], @varname(c.d)))
-        vnt = @inferred(setindex!!(vnt, :oi, @varname(y.z[3, 2, 3, 2, 4])))
-        vnt = @inferred(setindex!!(vnt, "", @varname(w[4][2, 1])))
+        vnt = @inferred(setindex!!(vnt, 1, @vn(a)))
+        vnt = @inferred(setindex!!(vnt, 2, @vn(b[2])))
+        vnt = @inferred(setindex!!(vnt, [3.0], @vn(c.d)))
+        vnt = @inferred(setindex!!(vnt, :oi, @vn(y.z[3, 2, 3, 2, 4])))
+        vnt = @inferred(setindex!!(vnt, "", @vn(w[4][2, 1])))
 
         get_key(pair) = pair.first
         vnt_key_mapped = @inferred(map_pairs!!(get_key, copy(vnt)))
@@ -1942,21 +1942,21 @@ Base.size(st::SizedThing) = st.size
         @testset "type stability when it works" begin
             vnt = VarNamedTuple()
             @test @inferred(NamedTuple(vnt)) == NamedTuple()
-            vnt = setindex!!(vnt, 1.0, @varname(a))
+            vnt = setindex!!(vnt, 1.0, @vn(a))
             @test @inferred(NamedTuple(vnt)) == (a=1.0,)
-            vnt = setindex!!(vnt, [1, 2, 3], @varname(b))
+            vnt = setindex!!(vnt, [1, 2, 3], @vn(b))
             @test @inferred(NamedTuple(vnt)) == (a=1.0, b=[1, 2, 3])
-            vnt = setindex!!(vnt, "wut", @varname(b[2]))
+            vnt = setindex!!(vnt, "wut", @vn(b[2]))
             @test @inferred(NamedTuple(vnt)) == (a=1.0, b=[1, "wut", 3])
         end
 
         @testset "invalid VarNames" begin
             vnt = VarNamedTuple()
-            vnt = setindex!!(vnt, 1.0, @varname(a[1]))
+            vnt = setindex!!(vnt, 1.0, @vn(a[1]))
             @test_throws ArgumentError NamedTuple(vnt)
 
             vnt = VarNamedTuple()
-            vnt = setindex!!(vnt, 1.0, @varname(a.b))
+            vnt = setindex!!(vnt, 1.0, @vn(a.b))
             @test_throws ArgumentError NamedTuple(vnt)
         end
     end
@@ -1969,9 +1969,9 @@ Base.size(st::SizedThing) = st.size
                 c.x.y := [10]
             end
             expected_vnt = VarNamedTuple()
-            expected_vnt = setindex!!(expected_vnt, 1.0, @varname(a))
-            expected_vnt = setindex!!(expected_vnt, [1, 15, 3], @varname(b))
-            expected_vnt = setindex!!(expected_vnt, [10], @varname(c.x.y))
+            expected_vnt = setindex!!(expected_vnt, 1.0, @vn(a))
+            expected_vnt = setindex!!(expected_vnt, [1, 15, 3], @vn(b))
+            expected_vnt = setindex!!(expected_vnt, [10], @vn(c.x.y))
             @test vnt == expected_vnt
         end
 
@@ -1985,9 +1985,9 @@ Base.size(st::SizedThing) = st.size
                 c.x.y := cxy
             end
             expected_vnt = VarNamedTuple()
-            expected_vnt = setindex!!(expected_vnt, 1.0, @varname(a))
-            expected_vnt = setindex!!(expected_vnt, [1, 15, 3], @varname(b))
-            expected_vnt = setindex!!(expected_vnt, [10], @varname(c.x.y))
+            expected_vnt = setindex!!(expected_vnt, 1.0, @vn(a))
+            expected_vnt = setindex!!(expected_vnt, [1, 15, 3], @vn(b))
+            expected_vnt = setindex!!(expected_vnt, [10], @vn(c.x.y))
             @test vnt == expected_vnt
         end
 
@@ -1998,7 +1998,7 @@ Base.size(st::SizedThing) = st.size
                 a[1] := 1.0
             end
             expected_vnt = VarNamedTuple()
-            expected_vnt = templated_setindex!!(expected_vnt, 1.0, @varname(a[1]), a)
+            expected_vnt = templated_setindex!!(expected_vnt, 1.0, @vn(a[1]), a)
             @test vnt == expected_vnt
         end
 
@@ -2012,7 +2012,7 @@ Base.size(st::SizedThing) = st.size
                 end
             end
             expected_vnt = VarNamedTuple()
-            expected_vnt = templated_setindex!!(expected_vnt, 1.0, @varname(a[1]), zeros(3))
+            expected_vnt = templated_setindex!!(expected_vnt, 1.0, @vn(a[1]), zeros(3))
             @test vnt == expected_vnt
         end
 
@@ -2023,7 +2023,7 @@ Base.size(st::SizedThing) = st.size
                 b[1] := 2.0
             end
             expected_vnt = VarNamedTuple()
-            expected_vnt = templated_setindex!!(expected_vnt, 2.0, @varname(b[1]), a)
+            expected_vnt = templated_setindex!!(expected_vnt, 2.0, @vn(b[1]), a)
             @test vnt == expected_vnt
         end
 
@@ -2042,8 +2042,8 @@ Base.size(st::SizedThing) = st.size
             @test evalcount[] == 1
 
             expected_vnt = VarNamedTuple()
-            expected_vnt = templated_setindex!!(expected_vnt, 1.0, @varname(c[1]), zeros(4))
-            expected_vnt = templated_setindex!!(expected_vnt, 2.0, @varname(c[2]), zeros(4))
+            expected_vnt = templated_setindex!!(expected_vnt, 1.0, @vn(c[1]), zeros(4))
+            expected_vnt = templated_setindex!!(expected_vnt, 2.0, @vn(c[2]), zeros(4))
             @test vnt == expected_vnt
         end
     end

@@ -245,8 +245,8 @@ function _setindex_optic!!(
                 # This situation can happen e.g. with
                 #     vnt = VarNamedTuple()
                 #     x = zeros(2)
-                #     vnt = templated_setindex!!(vnt, 1.0, @varname(x[1:2][1]), x)
-                #     vnt = templated_setindex!!(vnt, 2.0, @varname(x[1:2][2]), x)
+                #     vnt = templated_setindex!!(vnt, 1.0, @vn(x[1:2][1]), x)
+                #     vnt = templated_setindex!!(vnt, 2.0, @vn(x[1:2][2]), x)
                 need_merge = true
             end
             # No new data but we are allowed to create it.

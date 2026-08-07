@@ -71,14 +71,14 @@ For `NamedTuple`:
 ```jldoctest
 julia> vals = (x = [1.0],);
 
-julia> getvalue(vals, @varname(x)) # same as `getindex`
+julia> getvalue(vals, @vn(x)) # same as `getindex`
 1-element Vector{Float64}:
  1.0
 
-julia> getvalue(vals, @varname(x[1])) # different from `getindex`
+julia> getvalue(vals, @vn(x[1])) # different from `getindex`
 1.0
 
-julia> getvalue(vals, @varname(x[2]))
+julia> getvalue(vals, @vn(x[2]))
 ERROR: x[2] was not found in the NamedTuple provided
 [...]
 ```
@@ -86,16 +86,16 @@ ERROR: x[2] was not found in the NamedTuple provided
 For `AbstractDict`:
 
 ```jldoctest
-julia> vals = Dict(@varname(x) => [1.0]);
+julia> vals = Dict(@vn(x) => [1.0]);
 
-julia> getvalue(vals, @varname(x)) # same as `getindex`
+julia> getvalue(vals, @vn(x)) # same as `getindex`
 1-element Vector{Float64}:
  1.0
 
-julia> getvalue(vals, @varname(x[1])) # different from `getindex`
+julia> getvalue(vals, @vn(x[1])) # different from `getindex`
 1.0
 
-julia> getvalue(vals, @varname(x[2]))
+julia> getvalue(vals, @vn(x[2]))
 ERROR: x[2] was not found in the dictionary provided
 [...]
 ```
@@ -103,24 +103,24 @@ ERROR: x[2] was not found in the dictionary provided
 In the `AbstractDict` case we can also have keys such as `v[1]`:
 
 ```jldoctest
-julia> vals = Dict(@varname(x[1]) => [1.0,]);
+julia> vals = Dict(@vn(x[1]) => [1.0,]);
 
-julia> getvalue(vals, @varname(x[1])) # same as `getindex`
+julia> getvalue(vals, @vn(x[1])) # same as `getindex`
 1-element Vector{Float64}:
  1.0
 
-julia> getvalue(vals, @varname(x[1][1])) # different from `getindex`
+julia> getvalue(vals, @vn(x[1][1])) # different from `getindex`
 1.0
 
-julia> getvalue(vals, @varname(x[1][2]))
+julia> getvalue(vals, @vn(x[1][2]))
 ERROR: x[1][2] was not found in the dictionary provided
 [...]
 
-julia> getvalue(vals, @varname(x[2][1]))
+julia> getvalue(vals, @vn(x[2][1]))
 ERROR: x[2][1] was not found in the dictionary provided
 [...]
 
-julia> getvalue(vals, @varname(x))
+julia> getvalue(vals, @vn(x))
 ERROR: x was not found in the dictionary provided
 [...]
 ```
@@ -135,20 +135,20 @@ exact match, and if that fails it returns the value with the most specific key.
     times.
 
 ```jldoctest
-julia> vals = Dict(@varname(x) => [[1.0]], @varname(x[1]) => [2.0]);
+julia> vals = Dict(@vn(x) => [[1.0]], @vn(x[1]) => [2.0]);
 
 julia> # Here, the `x[1]` key is not used because `x` is an exact match.
-       getvalue(vals, @varname(x))
+       getvalue(vals, @vn(x))
 1-element Vector{Vector{Float64}}:
  [1.0]
 
 julia> # Likewise, the `x` key is not used because `x[1]` is an exact match.
-       getvalue(vals, @varname(x[1]))
+       getvalue(vals, @vn(x[1]))
 1-element Vector{Float64}:
  2.0
 
 julia> # No exact match, so the most specific key, i.e. `x[1]`, is used.
-       getvalue(vals, @varname(x[1][1]))
+       getvalue(vals, @vn(x[1][1]))
 2.0
 ```
 """
@@ -204,56 +204,56 @@ Determine whether `vals` contains a value for a given `vn`.
 With `x` as a `NamedTuple`:
 
 ```jldoctest
-julia> hasvalue((x = 1.0, ), @varname(x))
+julia> hasvalue((x = 1.0, ), @vn(x))
 true
 
-julia> hasvalue((x = 1.0, ), @varname(x[1]))
+julia> hasvalue((x = 1.0, ), @vn(x[1]))
 false
 
-julia> hasvalue((x = [1.0],), @varname(x))
+julia> hasvalue((x = [1.0],), @vn(x))
 true
 
-julia> hasvalue((x = [1.0],), @varname(x[1]))
+julia> hasvalue((x = [1.0],), @vn(x[1]))
 true
 
-julia> hasvalue((x = [1.0],), @varname(x[2]))
+julia> hasvalue((x = [1.0],), @vn(x[2]))
 false
 ```
 
 With `x` as a `AbstractDict`:
 
 ```jldoctest
-julia> hasvalue(Dict(@varname(x) => 1.0, ), @varname(x))
+julia> hasvalue(Dict(@vn(x) => 1.0, ), @vn(x))
 true
 
-julia> hasvalue(Dict(@varname(x) => 1.0, ), @varname(x[1]))
+julia> hasvalue(Dict(@vn(x) => 1.0, ), @vn(x[1]))
 false
 
-julia> hasvalue(Dict(@varname(x) => [1.0]), @varname(x))
+julia> hasvalue(Dict(@vn(x) => [1.0]), @vn(x))
 true
 
-julia> hasvalue(Dict(@varname(x) => [1.0]), @varname(x[1]))
+julia> hasvalue(Dict(@vn(x) => [1.0]), @vn(x[1]))
 true
 
-julia> hasvalue(Dict(@varname(x) => [1.0]), @varname(x[2]))
+julia> hasvalue(Dict(@vn(x) => [1.0]), @vn(x[2]))
 false
 ```
 
 In the `AbstractDict` case we can also have keys such as `v[1]`:
 
 ```jldoctest
-julia> vals = Dict(@varname(x[1]) => [1.0,]);
+julia> vals = Dict(@vn(x[1]) => [1.0,]);
 
-julia> hasvalue(vals, @varname(x[1])) # same as `haskey`
+julia> hasvalue(vals, @vn(x[1])) # same as `haskey`
 true
 
-julia> hasvalue(vals, @varname(x[1][1])) # different from `haskey`
+julia> hasvalue(vals, @vn(x[1][1])) # different from `haskey`
 true
 
-julia> hasvalue(vals, @varname(x[1][2]))
+julia> hasvalue(vals, @vn(x[1][2]))
 false
 
-julia> hasvalue(vals, @varname(x[2][1]))
+julia> hasvalue(vals, @vn(x[2][1]))
 false
 ```
 """

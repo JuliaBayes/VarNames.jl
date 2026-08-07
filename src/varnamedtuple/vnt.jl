@@ -17,13 +17,13 @@ the order in which elements were inserted into the `VarNamedTuple`, though isn't
 equal to it. More specifically
 
 * Any new keys that have a joint parent `VarName` with an existing key are inserted after
-  that key. For instance, if one first inserts, in order, `@varname(a.x)`, `@varname(b)`,
-  and `@varname(a.y)`, the resulting order will be
-  `(@varname(a.x), @varname(a.y), @varname(b))`.
-* `Index` keys`, like `@varname(a[3])` or `@varname(b[2,3,4:5])`, are always iterated
+  that key. For instance, if one first inserts, in order, `@vn(a.x)`, `@vn(b)`,
+  and `@vn(a.y)`, the resulting order will be
+  `(@vn(a.x), @vn(a.y), @vn(b))`.
+* `Index` keys`, like `@vn(a[3])` or `@vn(b[2,3,4:5])`, are always iterated
   in the same order an `Array` with the same indices would be iterated. For instance,
-  if one first inserts, in order, `@varname(a[2])`, `@varname(b)`, and `@varname(a[1])`,
-  the resulting order will be `(@varname(a[1]), @varname(a[2]), @varname(b))`.
+  if one first inserts, in order, `@vn(a[2])`, `@vn(b)`, and `@vn(a[1])`,
+  the resulting order will be `(@vn(a[1]), @vn(a[2]), @vn(b))`.
 
 Otherwise insertion order is respected.
 
@@ -107,7 +107,7 @@ shape of the top-level symbol in `vn`. For example:
 
 ```julia
 vnt = VarNamedTuple()
-templated_setindex!!(vnt, 10, @varname(x[1]), rand(2, 2))
+templated_setindex!!(vnt, 10, @vn(x[1]), rand(2, 2))
 ```
 
 Here, `rand(2, 2)` is the template for the top-level symbol `x`, which tells `setindex!!`
@@ -149,7 +149,7 @@ end
 This is similar to `templated_setindex!!`, but does not take a `template` argument. In
 effect the `template` passed through is `NoTemplate()`. It is often the case that the
 template is not actually needed (for example, if you are setting a top-level VarName:
-`@varname(a)`, or if the VarName only contains Property optics, or if the arrays already
+`@vn(a)`, or if the VarName only contains Property optics, or if the arrays already
 exist and you are merely updating a value inside it). In such cases, this method will work
 fine, but may throw an error if the template is actually needed. Specifically, this is
 likely to happen if you set a VarName with dynamic optics or colons, since in those cases
@@ -159,7 +159,7 @@ For example, this will error, since it is not known what `x` should be:
 
 ```julia
 vnt = VarNamedTuple()
-setindex!!(vnt, 10, @varname(x[1]))
+setindex!!(vnt, 10, @vn(x[1]))
 ```
 """
 function BangBang.setindex!!(vnt::VarNamedTuple, value, vn::VarName)
@@ -258,7 +258,7 @@ end
 
 Convert a `VarNamedTuple` to a standard `NamedTuple`, provided all keys in the
 `VarNamedTuple` are `VarName`s with top-level symbols. If any key is a `VarName`
-with a non-identity optic (e.g., `@varname(x.a)` or `@varname(x[1])`), this will
+with a non-identity optic (e.g., `@vn(x.a)` or `@vn(x[1])`), this will
 throw an `ArgumentError`.
 
 # Examples
@@ -266,14 +266,14 @@ throw an `ArgumentError`.
 ```jldoctest
 julia> using VarNames, BangBang
 
-julia> vnt = VarNamedTuple(); vnt = setindex!!(vnt, 10, @varname(x))
+julia> vnt = VarNamedTuple(); vnt = setindex!!(vnt, 10, @vn(x))
 VarNamedTuple
 └─ x => 10
 
 julia> NamedTuple(vnt)
 (x = 10,)
 
-julia> vnt2 = setindex!!(vnt, 20, @varname(y.a))
+julia> vnt2 = setindex!!(vnt, 20, @vn(y.a))
 VarNamedTuple
 ├─ x => 10
 └─ y => VarNamedTuple

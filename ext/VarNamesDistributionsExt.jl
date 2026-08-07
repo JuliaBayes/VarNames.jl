@@ -120,15 +120,15 @@ to `hasvalue(vals, vn)`.
 For example:
 
 ```jldoctest; setup=:(using Distributions, LinearAlgebra))
-julia> d = Dict(@varname(x[1]) => 1.0, @varname(x[2]) => 2.0);
+julia> d = Dict(@vn(x[1]) => 1.0, @vn(x[2]) => 2.0);
 
-julia> hasvalue(d, @varname(x), MvNormal(zeros(2), I))
+julia> hasvalue(d, @vn(x), MvNormal(zeros(2), I))
 true
 
-julia> hasvalue(d, @varname(x), MvNormal(zeros(3), I))
+julia> hasvalue(d, @vn(x), MvNormal(zeros(3), I))
 false
 
-julia> hasvalue(d, @varname(x), MvNormal(zeros(3), I); error_on_incomplete=true)
+julia> hasvalue(d, @vn(x), MvNormal(zeros(3), I); error_on_incomplete=true)
 ERROR: only partial values for `x` found in the dictionary provided
 [...]
 ```
@@ -218,15 +218,15 @@ to `getvalue(vals, vn)`.
 For example:
 
 ```jldoctest; setup=:(using Distributions, LinearAlgebra))
-julia> d = Dict(@varname(x[1]) => 1.0, @varname(x[2]) => 2.0);
+julia> d = Dict(@vn(x[1]) => 1.0, @vn(x[2]) => 2.0);
 
-julia> getvalue(d, @varname(x), MvNormal(zeros(2), I))
+julia> getvalue(d, @vn(x), MvNormal(zeros(2), I))
 2-element Vector{Float64}:
  1.0
  2.0
 
 julia> # Use `hasvalue` to check for this case before calling `getvalue`.
-       getvalue(d, @varname(x), MvNormal(zeros(3), I))
+       getvalue(d, @vn(x), MvNormal(zeros(3), I))
 ERROR: `x` was not found in the dictionary provided
 [...]
 ```

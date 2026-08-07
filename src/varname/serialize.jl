@@ -166,10 +166,10 @@ if you are using custom index types, you will need to implement the
 documentation of [`dict_to_index`](@ref) for instructions on how to do this.
 
 ```jldoctest
-julia> varname_to_string(@varname(x))
+julia> varname_to_string(@vn(x))
 "{\\"optic\\":{\\"type\\":\\"Iden\\"},\\"sym\\":\\"x\\"}"
 
-julia> varname_to_string(@varname(x.a))
+julia> varname_to_string(@vn(x.a))
 "{\\"optic\\":{\\"child\\":{\\"type\\":\\"Iden\\"},\\"field\\":\\"a\\",\\"type\\":\\"Property\\"},\\"sym\\":\\"x\\"}"
 ```
 """

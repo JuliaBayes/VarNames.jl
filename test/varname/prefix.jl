@@ -5,31 +5,31 @@ using VarNames
 
 @testset "varname/prefix.jl" verbose = true begin
     @testset "basic cases" begin
-        @test prefix(@varname(y), @varname(x)) == @varname(x.y)
-        @test prefix(@varname(y), @varname(x[1])) == @varname(x[1].y)
-        @test prefix(@varname(y), @varname(x.a)) == @varname(x.a.y)
-        @test prefix(@varname(y[1]), @varname(x)) == @varname(x.y[1])
-        @test prefix(@varname(y.a), @varname(x)) == @varname(x.y.a)
+        @test prefix(@vn(y), @vn(x)) == @vn(x.y)
+        @test prefix(@vn(y), @vn(x[1])) == @vn(x[1].y)
+        @test prefix(@vn(y), @vn(x.a)) == @vn(x.a.y)
+        @test prefix(@vn(y[1]), @vn(x)) == @vn(x.y[1])
+        @test prefix(@vn(y.a), @vn(x)) == @vn(x.y.a)
 
-        @test unprefix(@varname(x.y[1]), @varname(x)) == @varname(y[1])
-        @test unprefix(@varname(x[1].y), @varname(x[1])) == @varname(y)
-        @test unprefix(@varname(x.a.y), @varname(x.a)) == @varname(y)
-        @test unprefix(@varname(x.y.a), @varname(x)) == @varname(y.a)
-        @test_throws ArgumentError unprefix(@varname(x.y.a), @varname(n))
-        @test_throws ArgumentError unprefix(@varname(x.y.a), @varname(x[1]))
+        @test unprefix(@vn(x.y[1]), @vn(x)) == @vn(y[1])
+        @test unprefix(@vn(x[1].y), @vn(x[1])) == @vn(y)
+        @test unprefix(@vn(x.a.y), @vn(x.a)) == @vn(y)
+        @test unprefix(@vn(x.y.a), @vn(x)) == @vn(y.a)
+        @test_throws ArgumentError unprefix(@vn(x.y.a), @vn(n))
+        @test_throws ArgumentError unprefix(@vn(x.y.a), @vn(x[1]))
     end
 
     @testset "round-trip + type stability" begin
         # This tuple is probably overkill, but the tests are super fast
         # anyway.
         vns = (
-            @varname(p),
-            @varname(q),
-            @varname(r[1]),
-            @varname(s.a),
-            @varname(t[1].a),
-            @varname(u[1].a.b),
-            @varname(v.a[1][2].b.c.d[3])
+            @vn(p),
+            @vn(q),
+            @vn(r[1]),
+            @vn(s.a),
+            @vn(t[1].a),
+            @vn(u[1].a.b),
+            @vn(v.a[1][2].b.c.d[3])
         )
         for vn1 in vns
             for vn2 in vns
