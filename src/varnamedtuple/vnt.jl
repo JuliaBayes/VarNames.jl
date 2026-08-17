@@ -20,7 +20,7 @@ equal to it. More specifically
   that key. For instance, if one first inserts, in order, `@vn(a.x)`, `@vn(b)`,
   and `@vn(a.y)`, the resulting order will be
   `(@vn(a.x), @vn(a.y), @vn(b))`.
-* `Index` keys`, like `@vn(a[3])` or `@vn(b[2,3,4:5])`, are always iterated
+* `Index` keys, like `@vn(a[3])` or `@vn(b[2,3,4:5])`, are always iterated
   in the same order an `Array` with the same indices would be iterated. For instance,
   if one first inserts, in order, `@vn(a[2])`, `@vn(b)`, and `@vn(a[1])`,
   the resulting order will be `(@vn(a[1]), @vn(a[2]), @vn(b))`.
