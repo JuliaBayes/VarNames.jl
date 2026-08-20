@@ -9,4 +9,5 @@ using Test
     include("varname/leaves.jl")
     include("varname/serialize.jl")
     include("varnamedtuple.jl")
+    include("draw.jl")
 end
