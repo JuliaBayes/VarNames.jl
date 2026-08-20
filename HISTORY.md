@@ -1,3 +1,7 @@
+# 0.1.3
+
+Add `==`, `isequal`, and `show` methods for `Draw`.
+
 # 0.1.2
 
 Export the `vnt_pretty_print` function and `MustNotOverWriteError` struct.

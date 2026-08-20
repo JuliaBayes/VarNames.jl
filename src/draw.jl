@@ -30,3 +30,40 @@ Returns the extra information of the draw as a `NamedTuple`.
 function extras(draw::Draw)
     return draw.extras
 end
+
+function Base.show(io::IO, ::MIME"text/plain", draw::Draw)
+    printstyled(io, "VarNames.Draw"; bold=true)
+    print(io, "\n ├─ ")
+    prms, extrs = parameters(draw), extras(draw)
+    if isempty(prms)
+        printstyled(io, "params"; bold=true)
+        println(io, " (empty)")
+    else
+        printstyled(io, "params"; bold=true)
+        print(io, "\n │  ")
+        vnt_pretty_print(io, prms, " │  ", 0)
+        println(io)
+    end
+    print(io, " └─ ")
+    printstyled(io, "extras"; bold=true)
+    if isempty(extrs)
+        println(io, " (empty)")
+    else
+        nstats = length(extrs)
+        for (index, (name, value)) in enumerate(pairs(extrs))
+            print(io, index == nstats ? "\n    └─ " : "\n    ├─ ")
+            printstyled(io, name; color=:blue)
+            print(io, " = ")
+            show(io, value)
+        end
+    end
+    return nothing
+end
+
+function Base.:(==)(left::VarNames.Draw, right::VarNames.Draw)
+    return parameters(left) == parameters(right) & extras(left) == extras(right)
+end
+
+function Base.isequal(left::VarNames.Draw, right::VarNames.Draw)
+    return isequal(parameters(left), parameters(right)) && isequal(extras(left), extras(right))
+end
