@@ -70,7 +70,7 @@ export VarNamedTuple,
     SkipTemplate,
     @vnt,
     vnt_pretty_print,
-    MustNotOverwriteError,
+    MustNotOverwriteError
 
 include("draw.jl")
 export Draw
