@@ -1,3 +1,7 @@
+# 0.1.2
+
+Export the `vnt_pretty_print` function and `MustNotOverWriteError` struct.
+
 # 0.1.1
 
 Added the `Draw` struct, which bundles a `VarNamedTuple` of parameter values with a `NamedTuple` of extra information, as well as the accessor functions `parameters` and `extras`.

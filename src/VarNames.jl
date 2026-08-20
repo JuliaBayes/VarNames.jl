@@ -68,7 +68,9 @@ export VarNamedTuple,
     subset,
     NoTemplate,
     SkipTemplate,
-    @vnt
+    @vnt,
+    vnt_pretty_print,
+    MustNotOverwriteError,
 
 include("draw.jl")
 export Draw
