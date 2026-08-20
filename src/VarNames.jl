@@ -70,6 +70,11 @@ export VarNamedTuple,
     SkipTemplate,
     @vnt
 
+include("draw.jl")
+export Draw
+export parameters
+export extras
+
 using BangBang: push!!, empty!!, setindex!!
 export push!!, empty!!, setindex!!
 
