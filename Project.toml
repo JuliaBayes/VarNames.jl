@@ -1,6 +1,6 @@
 name = "VarNames"
 uuid = "09a315b2-63fc-4165-8d7f-d59368e770cc"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Penelope Yong <penelopeysm@gmail.com>", "Markus Hauru <markus@mhauru.org>"]
 
 [deps]

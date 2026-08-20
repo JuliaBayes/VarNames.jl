@@ -16,3 +16,9 @@ templated_setindex!!
 densify!!
 skeleton
 ```
+
+```@docs
+Draw
+parameters
+extras
+```
