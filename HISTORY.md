@@ -1,3 +1,7 @@
+# 0.1.4
+
+Add a `show_header` keyword argument to `vnt_pretty_print` to allow for callers to control whether or not to print the `VarNamedTuple` header.
+
 # 0.1.3
 
 Add `==`, `isequal`, and `show` methods for `Draw`.

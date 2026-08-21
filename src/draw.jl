@@ -65,5 +65,6 @@ function Base.:(==)(left::VarNames.Draw, right::VarNames.Draw)
 end
 
 function Base.isequal(left::VarNames.Draw, right::VarNames.Draw)
-    return isequal(parameters(left), parameters(right)) && isequal(extras(left), extras(right))
+    return isequal(parameters(left), parameters(right)) &&
+           isequal(extras(left), extras(right))
 end
