@@ -70,7 +70,13 @@ end
 colors = [:red, :green, :blue, :yellow, :magenta, :cyan]
 color_at_depth(depth::Int) = colors[mod1(depth, length(colors))]
 
-function vnt_pretty_print(io::IO, vnt::VarNamedTuple, prefix::String, depth::Int; show_header=true)
+function vnt_pretty_print(
+    io::IO,
+    vnt::VarNamedTuple,
+    prefix::String,
+    depth::Int;
+    show_header=true,
+)
     # Allow top-level callers to suppress the header if they want to print a VarNamedTuple
     # as part of a larger structure.
     show_header && println(io, "VarNamedTuple")
