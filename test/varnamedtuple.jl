@@ -1080,6 +1080,14 @@ Base.size(st::SizedThing) = st.size
             @test merge(vnt1, vnt2)[vn2] == A(2.0)
         end
 
+        @testset "with keys that are empty VNTs" begin
+            # Note that Wren depends on this behaviour. Do not let these tests fail!
+            vnt1 = VarNamedTuple(a = VarNamedTuple())
+            vnt2 = VarNamedTuple(b = VarNamedTuple())
+            merged = merge(vnt1, vnt2)
+            @test merged == VarNamedTuple(a = VarNamedTuple(), b = VarNamedTuple())
+        end
+
         # TODO(penelopeysm): This set of tests fails. The reason is because later on we
         # have a VarName that looks like d[1, 1][14, 13], i.e., d must be a matrix of
         # matrices. So we have to provide that as the structure for d (via `f`). However,
