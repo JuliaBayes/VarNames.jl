@@ -1082,10 +1082,10 @@ Base.size(st::SizedThing) = st.size
 
         @testset "with keys that are empty VNTs" begin
             # Note that Wren depends on this behaviour. Do not let these tests fail!
-            vnt1 = VarNamedTuple(a = VarNamedTuple())
-            vnt2 = VarNamedTuple(b = VarNamedTuple())
+            vnt1 = VarNamedTuple(a=VarNamedTuple())
+            vnt2 = VarNamedTuple(b=VarNamedTuple())
             merged = merge(vnt1, vnt2)
-            @test merged == VarNamedTuple(a = VarNamedTuple(), b = VarNamedTuple())
+            @test merged == VarNamedTuple(a=VarNamedTuple(), b=VarNamedTuple())
         end
 
         # TODO(penelopeysm): This set of tests fails. The reason is because later on we

@@ -1,3 +1,7 @@
+const ALB_INVALID_INDEX_ERR = ArgumentError(
+    "A non-Array value set with a range of indices must be retrieved with the same range of indices.",
+)
+
 # Some utilities for checking what sort of indices we are dealing with.
 # The non-generated function implementations of these would be
 # _has_colon(::T) where {T<:Tuple} = any(x <: Colon for x in T.parameters)
@@ -366,14 +370,9 @@ function Base.getindex(pa::PartialArray, inds::Vararg{Any}; kw...)
     # we are retrieving exactly that block and nothing else.
     is_multiindex = _is_multiindex(pa.data, inds...; kw...)
 
-    # The error we'll throw if the retrieval is invalid.
-    alb_err = ArgumentError("""
-        A non-Array value set with a range of indices must be retrieved with the same
-        range of indices.
-        """)
     if val isa ArrayLikeBlock
         # Error if we try to get a single value, but it's an ArrayLikeBlock.
-        throw(alb_err)
+        throw(ALB_INVALID_INDEX_ERR)
     elseif is_multiindex &&
            val isa AbstractArray &&
            (eltype(val) <: ArrayLikeBlock || ArrayLikeBlock <: eltype(val))
@@ -392,7 +391,7 @@ function Base.getindex(pa::PartialArray, inds::Vararg{Any}; kw...)
         if _can_get_arraylikeblock(val)
             return first(val).block
         else
-            throw(alb_err)
+            throw(ALB_INVALID_INDEX_ERR)
         end
     elseif val isa GrowableArray
         # This code path is hit for things like `vnt[@vn(x[:])]` where `x` is a PA that
