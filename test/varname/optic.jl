@@ -6,7 +6,7 @@ using VarNames
 
 @testset "varname/optic.jl" verbose = true begin
     @testset "pretty-printing" begin
-        dynamic_range = :(2:$(Symbol(:end)))
+        dynamic_range = :(2:($(Symbol(:end))))
         @test string(@opticof(_.a.b.c)) == "Optic(.a.b.c)"
         @test string(@opticof(_[1][2][3])) == "Optic([1][2][3])"
         @test string(@opticof(_["a"][:b])) == "Optic([\"a\"][:b])"
@@ -19,7 +19,7 @@ using VarNames
         @test string(with_mutation(@opticof(_))) == "Optic!!()"
         @test string(with_mutation(@opticof(_[begin]))) == "Optic!!([DynamicIndex(begin)])"
         @test string(with_mutation(@opticof(_[2:end]))) ==
-            "Optic!!([DynamicIndex($(dynamic_range))])"
+              "Optic!!([DynamicIndex($(dynamic_range))])"
     end
 
     @testset "equality" begin
