@@ -94,6 +94,19 @@ function Base.getindex(vnt::VarNamedTuple, vn::VarName)
     return unwrap_internal_array(result)
 end
 
+"""
+    view(vnt::VarNamedTuple, vn::VarName)
+
+Retrieve `vn` from `vnt`, using views for array slices where possible. Integer and Cartesian
+scalar indices, and non-array values, behave as in `getindex`.
+
+Array views share storage with `vnt`, so mutations through a view change the stored array.
+"""
+function Base.view(vnt::VarNamedTuple, vn::VarName)
+    result = _getindex_optic(vnt, varname_to_optic(vn), vn, _maybe_view)
+    return unwrap_internal_array(result)
+end
+
 Base.haskey(vnt::VarNamedTuple, vn::VarName) = _haskey_optic(vnt, vn)
 
 """
