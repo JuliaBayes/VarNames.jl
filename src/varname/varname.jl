@@ -1,12 +1,14 @@
 """
     VarName{sym}(optic=identity)
+    VarName(sym::Symbol)
 
 A variable identifier for a symbol `sym` and optic `optic`. `sym` refers to the name of the 
 top-level Julia variable, while `optic` allows one to specify a particular property or index
 inside that variable.
 
 `VarName`s can be manually constructed using the `VarName{sym}(optic)` constructor, or from
-an optic expression through the [`@vn`](@ref) convenience macro.
+an optic expression through the [`@vn`](@ref) convenience macro. `VarName(sym)` constructs
+a top-level variable name from a symbol.
 """
 struct VarName{sym,T<:AbstractOptic}
     optic::T
@@ -14,6 +16,9 @@ struct VarName{sym,T<:AbstractOptic}
         return new{sym,typeof(optic)}(optic)
     end
 end
+
+VarName(sym::Symbol) = VarName{sym}()
+Base.convert(::Type{VarName}, sym::Symbol) = VarName(sym)
 
 """
     getsym(vn::VarName)
