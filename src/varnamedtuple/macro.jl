@@ -1,9 +1,12 @@
 """
     @vnt begin ... end
+    @vnt(var := value, ...)
+    @vnt(x, y, ...)
 
 Construct a `VarNamedTuple` from a block of assignments. Each assignment should be of the form
 `var := value`, where `var` is a variable name. This is best illustrated by
-example:
+example. Single assignments and comma-separated arguments are also accepted. A bare
+symbol `x` is shorthand for `x := x`:
 
 ```jldoctest
 julia> using VarNames
@@ -72,8 +75,11 @@ If no template is provided, the VNT will use a `GrowableArray`. This can produce
 results in simple cases, but is not recommended for general use. Please see the
 VarNamedTuple documentation for more details.
 """
-macro vnt(expr)
-    return _vnt(expr)
+macro vnt(exprs...)
+    input =
+        length(exprs) == 1 && Meta.isexpr(exprs[1], :block) ? exprs[1] :
+        Expr(:block, exprs...)
+    return _vnt(input)
 end
 
 _get_top_sym(expr::Symbol) = expr
@@ -95,6 +101,7 @@ function _vnt(input)
     output = Expr(:block)
     push!(output.args, :($vnt = VarNamedTuple()))
     for expr in input.args
+        expr = expr isa Symbol ? Expr(:(:=), expr, expr) : expr
         if expr isa LineNumberNode
             push!(output.args, expr)
         elseif Meta.isexpr(expr, :macrocall) && expr.args[1] == Symbol("@template")

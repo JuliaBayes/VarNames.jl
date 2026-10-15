@@ -1894,6 +1894,14 @@ Base.size(st::SizedThing) = st.size
     end
 
     @testset "@vnt macro" begin
+        @testset "short syntax" begin
+            x, y = 1.0, [2, 3]
+            @test (@vnt x := x) == VarNamedTuple(; x)
+            @test (@vnt(x := x, y := y)) == VarNamedTuple(; x, y)
+            @test (@vnt(x, y)) == VarNamedTuple(; x, y)
+            @test (@vnt(x, y := y)) == VarNamedTuple(; x, y)
+        end
+
         @testset "no templates" begin
             vnt = @vnt begin
                 a := 1.0
