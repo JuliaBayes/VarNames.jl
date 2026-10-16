@@ -55,10 +55,10 @@ function VarNames._getindex_optic(
     pa::PartialArray{<:Any,<:Any,<:ComponentVector},
     optic::Property{S},
     orig_vn,
-    get=Base.getindex,
+    getfunc,
 ) where {S}
     index_optic = _property_to_index(pa.data, optic)
-    return _getindex_optic(pa, index_optic, orig_vn, get)
+    return _getindex_optic(pa, index_optic, orig_vn, getfunc)
 end
 
 end

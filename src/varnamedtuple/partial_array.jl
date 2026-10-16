@@ -360,12 +360,12 @@ end
 function _maybe_view(pa::PartialArray, inds...; kw...)
     return _getindex_partialarray(pa, _maybe_view, inds...; kw...)
 end
-function _getindex_partialarray(pa::PartialArray, get, inds...; kw...)
+function _getindex_partialarray(pa::PartialArray, getfunc, inds...; kw...)
     # Check the mask first. We defer bounds checking to the sub-arrays.
-    if !(all(get(pa.mask, inds...; kw...)))
+    if !(all(getfunc(pa.mask, inds...; kw...)))
         throw(BoundsError(pa, (inds..., kw)))
     end
-    val = get(pa.data, inds...; kw...)
+    val = getfunc(pa.data, inds...; kw...)
 
     # If not for ArrayLikeBlocks, at this point we could just return val directly. However,
     # we need to check if val contains any ArrayLikeBlocks, and if so, make sure that that
