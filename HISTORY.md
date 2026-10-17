@@ -1,3 +1,8 @@
+# 0.1.5
+
+Add `Base.view(::VarNamedTuple, vn::VarName)`, which attempts to return a view of the corresponding value.
+This usually only makes a difference if `vn` is a slice of an array, e.g. `@vn(x[1:100])`.
+
 # 0.1.4
 
 Add a `show_header` keyword argument to `vnt_pretty_print` to allow for callers to control whether or not to print the `VarNamedTuple` header.
