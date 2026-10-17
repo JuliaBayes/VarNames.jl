@@ -2027,6 +2027,11 @@ Base.size(st::SizedThing) = st.size
             expected_vnt = templated_setindex!!(expected_vnt, 2.0, @vn(c[2]), zeros(4))
             @test vnt == expected_vnt
         end
+
+        @testset "long syntax doesn't promote bare variables to x := x" begin
+            x = 1.0
+            @test_throws LoadError eval(:(@vnt begin x end))
+        end
     end
 
     @testset "densify!!" begin
