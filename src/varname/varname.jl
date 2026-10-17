@@ -172,7 +172,7 @@ julia> vn = @vn(x[end])
 x[DynamicIndex(end)]
 
 julia> vn = @vn(x[1, end-1])
-x[1, DynamicIndex(end - 1)]
+x[1, DynamicIndex(var"end" - 1)]
 ```
 
 You can detect whether a `VarName` contains any dynamic indices using [`is_dynamic`](@ref):

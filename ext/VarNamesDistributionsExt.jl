@@ -319,7 +319,7 @@ function VarNames.hasvalue(vnt::VarNamedTuple, vn::VarName, dist::LKJCholesky)
     for k in keys(val)
         # VarNamedTuples have VarNames as keys, PartialArrays have Index optics.
         subvn = val isa VarNamedTuple ? prefix(k, vn) : append_optic(vn, k)
-        dval[subvn] = VarNames._getindex_optic(val, k, subvn)
+        dval[subvn] = VarNames._getindex_optic(val, k, subvn, Base.getindex)
     end
     return hasvalue(dval, vn, dist)
 end
@@ -337,7 +337,7 @@ function VarNames.getvalue(vnt::VarNamedTuple, vn::VarName, dist::LKJCholesky)
     for k in keys(val)
         # VarNamedTuples have VarNames as keys, PartialArrays have Index optics.
         subvn = val isa VarNamedTuple ? prefix(k, vn) : append_optic(vn, k)
-        dval[subvn] = VarNames._getindex_optic(val, k, subvn)
+        dval[subvn] = VarNames._getindex_optic(val, k, subvn, Base.getindex)
     end
     return getvalue(dval, vn, dist)
 end

@@ -236,7 +236,7 @@ _maybe_view(val::AbstractArray, i...; k...) = view(val, i...; k...)
 # SubArray (rather than an element) that messes things up if there are further layers of
 # optics. For example, if it's an Array of NamedTuples, then trying to access fields on that
 # 0-dimensional SubArray will fail.
-_maybe_view(val::AbstractArray, i::Int...) = getindex(val, i...)
+_maybe_view(val::AbstractArray, i::Union{Integer,CartesianIndex}...) = getindex(val, i...)
 # Other things like dictionaries can't be `view`ed into.
 _maybe_view(val, i...; k...) = getindex(val, i...; k...)
 

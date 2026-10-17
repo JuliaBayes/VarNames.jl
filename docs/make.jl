@@ -1,9 +1,11 @@
 using Pkg: Pkg
-Pkg.develop(Pkg.PackageSpec(; path=dirname(@__DIR__)))
-
 using Documenter
 using VarNames
 
+# For doctests.
+using BangBang
+
+Documenter.DocMeta.setdocmeta!(VarNames, :DocTestSetup, :(using VarNames))
 makedocs(;
     sitename="VarNames.jl",
     format=Documenter.HTML(),
@@ -22,7 +24,7 @@ makedocs(;
     ],
     checkdocs=:exports,
     warnonly=false,
-    doctest=false,
+    doctest=true,
 )
 
 Documenter.deploydocs(;

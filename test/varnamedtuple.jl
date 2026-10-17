@@ -441,6 +441,47 @@ Base.size(st::SizedThing) = st.size
         # TODO(penelopeysm) write these
     end
 
+    @testset "Views" begin
+        x = reshape(collect(1:12), 4, 3)
+        vnt = VarNamedTuple(a=VarNamedTuple(b=(x=x,)), s="hello")
+        vn = @vn(a.b.x[begin:end, 2][2:3])
+        copied = vnt[vn]
+        v = @inferred(view(vnt, vn))
+        @test v == copied == [6, 7]
+        v[1] = 60
+        @test x[2, 2] == 60
+        @test copied == [6, 7]
+        @test view(vnt, @vn(a.b.x)) === x
+        @test view(vnt, @vn(a.b.x[2, 2])) == 60
+        @test view(vnt, @vn(a.b.x[CartesianIndex(2, 2)])) == 60
+        @test view(vnt, @vn(s)) === "hello"
+
+        partial = setindex!!(VarNamedTuple(), [10, 20], @vn(x[2:3]))
+        v = @inferred(view(partial, @vn(x[1:3][2:3])))
+        @test v == [10, 20]
+        v[1] = 100
+        @test partial[@vn(x[2])] == 100
+        @test_throws BoundsError view(partial, @vn(x[1:2]))
+
+        block = SizedThing((2,))
+        partial = setindex!!(VarNamedTuple(), block, @vn(x[2:3]))
+        @test view(partial, @vn(x[2:3])) === block
+
+        da = DD.DimArray(collect(1:4), (DD.X,))
+        v = view(VarNamedTuple(x=da), @vn(x[X=2:3]))
+        v[1] = 99
+        @test da[2] == 99
+
+        ca = CA.ComponentArray(x=[1.0, 2.0, 3.0])
+        v = view(VarNamedTuple(x=ca), @vn(x.x[2:3]))
+        v[1] = 99
+        @test ca.x[2] == 99
+        partial = templated_setindex!!(VarNamedTuple(), [1.0, 2.0, 3.0], @vn(x.x), ca)
+        v = view(partial, @vn(x.x[2:3]))
+        v[1] = 99
+        @test partial[@vn(x.x[2])] == 99
+    end
+
     @testset "Chain of sets and gets" begin
         vnt = VarNamedTuple()
         vnt = @inferred(setindex!!(vnt, 32.0, @vn(a)))
