@@ -2030,7 +2030,9 @@ Base.size(st::SizedThing) = st.size
 
         @testset "long syntax doesn't promote bare variables to x := x" begin
             x = 1.0
-            @test_throws LoadError eval(:(@vnt begin x end))
+            @test_throws LoadError eval(:(@vnt begin
+                x
+            end))
         end
     end
 
