@@ -1,3 +1,7 @@
+# 0.1.6
+
+Add more convenient ways to construct simple `VarNamedTuple`s through the `@vnt` macro, such as `@vnt(x := xval, y := yval)` and `@vnt(x, y)`.
+
 # 0.1.5
 
 Add `Base.view(::VarNamedTuple, vn::VarName)`, which attempts to return a view of the corresponding value.

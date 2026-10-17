@@ -1,13 +1,14 @@
 """
     @vnt begin ... end
+    @vnt(var := value, ...)
+    @vnt(x, y, ...)
 
-Construct a `VarNamedTuple` from a block of assignments. Each assignment should be of the form
-`var := value`, where `var` is a variable name. This is best illustrated by
-example:
+Construct a `VarNamedTuple` from a block of assignments. Each assignment should be of the
+form `var := value`, where `var` is a variable name. This is best illustrated by example.
+
+## Basic syntax
 
 ```jldoctest
-julia> using VarNames
-
 julia> @vnt begin
            a := 1
            b := 2
@@ -16,6 +17,26 @@ VarNamedTuple
 ├─ a => 1
 └─ b => 2
 ```
+
+For simple cases, the `begin ... end` block can be replaced with a comma-separated series of
+assignments. In such a case, `x` is shorthand for `x := x`:
+
+```jldoctest
+julia> @vnt(a := 1, b := 2)
+VarNamedTuple
+├─ a => 1
+└─ b => 2
+
+julia> c = 3; d = 4; @vnt(c, d)
+VarNamedTuple
+├─ c => 3
+└─ d => 4
+
+julia> @vnt() # Empty.
+VarNamedTuple()
+```
+
+## More complex variables
 
 You can set entirely arbitrary variables:
 
@@ -72,8 +93,19 @@ If no template is provided, the VNT will use a `GrowableArray`. This can produce
 results in simple cases, but is not recommended for general use. Please see the
 VarNamedTuple documentation for more details.
 """
-macro vnt(expr)
-    return _vnt(expr)
+macro vnt(exprs...)
+    # Decide whether it's short- or long-form.
+    is_long_form = length(exprs) == 1 && Meta.isexpr(exprs[1], :block)
+    block_body = if is_long_form
+        only(exprs)
+    else
+        # short-form, so can promote `a` to `a := a`
+        new_exprs = map(exprs) do expr
+            expr isa Symbol ? Expr(:(:=), expr, expr) : expr
+        end
+        Expr(:block, new_exprs...)
+    end
+    return _vnt(block_body)
 end
 
 _get_top_sym(expr::Symbol) = expr
