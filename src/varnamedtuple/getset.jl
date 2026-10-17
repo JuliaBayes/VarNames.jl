@@ -11,7 +11,7 @@ const IndexWithoutChild = Index{<:Tuple,<:NamedTuple,Iden}
 _unimplemented() = error("Not implemented")
 
 """
-    _getindex_optic(collection, optic::Optic, orig_vn::VarName)
+    _getindex_optic(collection, optic::Optic, orig_vn::VarName, getfunc)
     _getindex_optic(collection, vn::VarName)
 
 Access the value in `collection` at the location specified by the given `optic`. If a `VarName`
@@ -32,21 +32,33 @@ an `AbstractArray`, but otherwise the only valid optic is `Iden`.
 and is only for error reporting purposes.
 """
 function _getindex_optic(vnt::VarNamedTuple, vn::VarName)
-    return _getindex_optic(vnt, varname_to_optic(vn), vn)
+    return _getindex_optic(vnt, varname_to_optic(vn), vn, Base.getindex)
 end
-function _getindex_optic(vnt::VarNamedTuple, vn::VarName, orig_vn)
-    return _getindex_optic(vnt, varname_to_optic(vn), orig_vn)
+function _getindex_optic(vnt::VarNamedTuple, vn::VarName, orig_vn, getfunc)
+    return _getindex_optic(vnt, varname_to_optic(vn), orig_vn, getfunc)
 end
 
-@inline _getindex_optic(@nospecialize(x::Any), ::Iden, orig_vn) = x
-@inline _getindex_optic(x::Any, o::AbstractOptic, orig_vn) = o(x)
-function _getindex_optic(vnt::VarNamedTuple, optic::Property{S}, orig_vn) where {S}
+@inline _getindex_optic(@nospecialize(x::Any), ::Iden, orig_vn, getfunc) = x
+@inline _getindex_optic(x::Any, o::AbstractOptic, orig_vn, getfunc) = o(x)
+function _getindex_optic(x, optic::Index, orig_vn, getfunc)
+    coptic = concretize_top_level(optic, x)
+    return _getindex_optic(
+        getfunc(x, coptic.ix...; coptic.kw...),
+        optic.child,
+        orig_vn,
+        getfunc,
+    )
+end
+function _getindex_optic(x, optic::Property{S}, orig_vn, getfunc) where {S}
+    return _getindex_optic(getproperty(x, S), optic.child, orig_vn, getfunc)
+end
+function _getindex_optic(vnt::VarNamedTuple, optic::Property{S}, orig_vn, getfunc) where {S}
     if !haskey(vnt.data, S)
         throw(KeyError(orig_vn))
     end
-    return _getindex_optic(getindex(vnt.data, S), optic.child, orig_vn)
+    return _getindex_optic(getindex(vnt.data, S), optic.child, orig_vn, getfunc)
 end
-function _getindex_optic(pa::PartialArray, optic::Index, orig_vn)
+function _getindex_optic(pa::PartialArray, optic::Index, orig_vn, getfunc)
     coptic = concretize_top_level(optic, pa.data)
     child_value =
         if _is_multiindex(pa, coptic.ix...; coptic.kw...) && coptic.child isa Index
@@ -56,13 +68,13 @@ function _getindex_optic(pa::PartialArray, optic::Index, orig_vn)
             # masked. Then `pa[1:2][1]` is valid, even though `pa[1:2]` would error.
             _subset_partialarray(pa, coptic.ix...; coptic.kw...)
         else
-            getindex(pa, coptic.ix...; coptic.kw...)
+            getfunc(pa, coptic.ix...; coptic.kw...)
         end
-    return _getindex_optic(child_value, optic.child, orig_vn)
+    return _getindex_optic(child_value, optic.child, orig_vn, getfunc)
 end
-function _getindex_optic(arr::AbstractArray, optic::IndexWithoutChild, orig_vn)
+function _getindex_optic(arr::AbstractArray, optic::IndexWithoutChild, orig_vn, getfunc)
     coptic = concretize_top_level(optic, arr)
-    return Base.getindex(arr, coptic.ix...; coptic.kw...)
+    return getfunc(arr, coptic.ix...; coptic.kw...)
 end
 
 # Fallback for everything else.

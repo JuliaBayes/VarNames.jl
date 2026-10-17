@@ -86,11 +86,81 @@ function Base.copy(vnt::VarNamedTuple{names}) where {names}
     )
 end
 
-# PartialArrays and GrowableArrays are an implementation detail of VarNamedTuple, and should
-# never be the return value of getindex. Thus, we automatically convert them to dense arrays
-# if needed.
+"""
+    Base.getindex(vnt::VarNamedTuple, vn::VarName)
+
+Retrieve the value of `vn` stored in `vnt`.
+
+```jldoctest
+julia> using VarNames
+
+julia> vnt = @vnt begin
+            a := 10
+            b := [1, 2, 3, 4, 5]
+            c := (; x = 1, y = 2)
+       end
+VarNamedTuple
+├─ a => 10
+├─ b => [1, 2, 3, 4, 5]
+└─ c => (x = 1, y = 2)
+
+julia> vnt[@vn(a)]
+10
+
+julia> vnt[@vn(b[3:5])]
+3-element Vector{Int64}:
+ 3
+ 4
+ 5
+
+julia> vnt[@vn(c.x)]
+1
+```
+"""
 function Base.getindex(vnt::VarNamedTuple, vn::VarName)
     result = _getindex_optic(vnt, vn)
+    # PartialArrays and GrowableArrays are an implementation detail of VarNamedTuple, and
+    # should never be the return value of getindex. Thus, we automatically convert them to
+    # dense arrays if needed.
+    return unwrap_internal_array(result)
+end
+
+"""
+    Base.view(vnt::VarNamedTuple, vn::VarName)
+
+Retrieve `vn` from `vnt`, using views for array slices where possible. Integer and Cartesian
+scalar indices, and non-array values, behave as in `getindex`.
+
+Array views share storage with `vnt`, so mutations through a view change the stored array.
+
+```jldoctest
+julia> using VarNames
+
+julia> vnt = @vnt begin
+            a := 10
+            b := [1, 2, 3, 4, 5]
+            c := (; x = 1, y = 2)
+       end
+VarNamedTuple
+├─ a => 10
+├─ b => [1, 2, 3, 4, 5]
+└─ c => (x = 1, y = 2)
+
+julia> view(vnt, @vn(a))
+10
+
+julia> view(vnt, @vn(b[3:5]))
+3-element view(::Vector{Int64}, 3:5) with eltype Int64:
+ 3
+ 4
+ 5
+
+julia> view(vnt, @vn(c.x))
+1
+```
+"""
+function Base.view(vnt::VarNamedTuple, vn::VarName)
+    result = _getindex_optic(vnt, varname_to_optic(vn), vn, _maybe_view)
     return unwrap_internal_array(result)
 end
 
@@ -129,9 +199,9 @@ end
 """
     templated_setindex_no_overwrite!!(vnt, value, vn, template)
 
-This is the same as `templated_setindex!!`, but throws an error if the location specified by
-`vn` already has a value in `vnt`. This is useful for ensuring that values in a `VarNamedTuple`
-are not set multiple times.
+This is the same as [`templated_setindex!!`](@ref), but throws an error if the location
+specified by `vn` already has a value in `vnt`. This is useful for ensuring that values in a
+`VarNamedTuple` are not set multiple times.
 """
 function templated_setindex_no_overwrite!!(vnt::VarNamedTuple, value, vn::VarName, template)
     return _setindex_optic!!(
@@ -146,16 +216,47 @@ end
 """
     BangBang.setindex!!(vnt::VarNamedTuple, value, vn::VarName)
 
-This is similar to `templated_setindex!!`, but does not take a `template` argument. In
-effect the `template` passed through is `NoTemplate()`. It is often the case that the
-template is not actually needed (for example, if you are setting a top-level VarName:
-`@vn(a)`, or if the VarName only contains Property optics, or if the arrays already
-exist and you are merely updating a value inside it). In such cases, this method will work
-fine, but may throw an error if the template is actually needed. Specifically, this is
-likely to happen if you set a VarName with dynamic optics or colons, since in those cases
-the size and shape of the underlying arrays cannot be inferred without a template.
+!!! warning
 
-For example, this will error, since it is not known what `x` should be:
+    If you are working with a VarNamedTuple, you _almost_ always want to use the templated
+    versions, chiefly [`templated_setindex!!`](@ref). You should only use `setindex!!` if
+    you know what you are doing.
+
+This is similar to [`templated_setindex!!`](@ref), but does not take a `template` argument.
+In effect the `template` passed through is [`NoTemplate()`](@ref).
+
+It is sometimes the case that the template is not actually needed. For example:
+
+```jldoctest
+julia> vnt = VarNamedTuple()
+VarNamedTuple()
+
+julia> # Setting a top-level VarName.
+       vnt = setindex!!(vnt, 10, @vn(a)) 
+VarNamedTuple
+└─ a => 10
+
+julia> # Setting a value inside an array that already exists.
+       vnt = setindex!!(vnt, zeros(2), @vn(b));
+       vnt = setindex!!(vnt, 1.0, @vn(b[1]))
+VarNamedTuple
+├─ a => 10
+└─ b => [1.0, 0.0]
+
+julia> # Setting a value which only uses Property optics.
+       vnt = setindex!!(vnt, 2.0, @vn(c.d.e))
+VarNamedTuple
+├─ a => 10
+├─ b => [1.0, 0.0]
+└─ c => VarNamedTuple
+        └─ d => VarNamedTuple
+                └─ e => 2.0
+```
+
+However, `setindex!!` may throw an error if the template is actually needed. Specifically,
+this is likely to happen if you set a VarName with dynamic optics or colons, since in those
+cases the size and shape of the underlying arrays cannot be inferred without a template. For
+example, this will error, since it is not known what `x` should be:
 
 ```julia
 vnt = VarNamedTuple()
@@ -226,6 +327,11 @@ but have their contents deleted, rather than being removed entirely. This means 
     end
 end
 
+"""
+    Base.isempty(vnt::VarNamedTuple)
+
+Check if `vnt` is empty.
+"""
 @generated function Base.isempty(vnt::VarNamedTuple{Names,Values}) where {Names,Values}
     if isempty(Names)
         return :(return true)
