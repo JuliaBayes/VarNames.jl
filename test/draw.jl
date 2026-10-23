@@ -11,6 +11,11 @@ using Test
 
     @test parameters(d) == vnt
     @test extras(d) == nt
+    @test d == Draw(vnt, nt)
+    @test d != Draw(VarNamedTuple(x=1.0), nt)
+    missing_vnt = VarNamedTuple(x=missing)
+    @test ismissing(Draw(missing_vnt, nt) == Draw(missing_vnt, nt))
+    @test (Draw(missing_vnt, (a=1,)) == Draw(missing_vnt, (a=2,))) === false
 end
 
 end # module DrawTests
