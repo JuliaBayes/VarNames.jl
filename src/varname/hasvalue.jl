@@ -48,10 +48,8 @@ function canview(optic::Index, x::NamedTuple)
 end
 canview(optic::Index, x::Union{Tuple,Ref}) = _canview_fallback(optic, x)
 
-# Tuple/Ref and keyword indexing have no common bounds-checking interface, so use
-# their own getindex methods. This also covers keyword arguments for DimArray,
-# which has no `checkbounds` method (yet):
-# https://github.com/rafaqz/DimensionalData.jl/issues/1156
+# Tuple/Ref have no common bounds-checking interface. Use native getindex here,
+# including for keyword indexing.
 function _canview_fallback(optic::Index, x)
     try
         coptic = concretize_top_level(optic, x)

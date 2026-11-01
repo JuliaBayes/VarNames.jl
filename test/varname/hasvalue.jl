@@ -82,10 +82,13 @@ end
 @testset "base getvalue + hasvalue" begin
     @testset "Tuple and Ref" begin
         values = (tuple=((value=1,), (value=2,)), ref=Ref((value=3,)))
+        @test hasvalue(values, @vn(tuple[end].value))
         @test getvalue(values, @vn(tuple[end].value)) == 2
+        @test hasvalue(values, @vn(tuple[1:2]))
         @test getvalue(values, @vn(tuple[1:2])) == values.tuple
         @test !hasvalue(values, @vn(tuple[3]))
         @test !hasvalue(values, @vn(tuple[1].missing))
+        @test hasvalue(values, @vn(ref[].value))
         @test getvalue(values, @vn(ref[].value)) == 3
         @test !hasvalue(values, @vn(ref[1]))
     end
