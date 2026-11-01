@@ -1,3 +1,7 @@
+# 0.1.7
+
+Fix a bug in `Base.:(==)` for `VarNames.Draw`.
+
 # 0.1.6
 
 Add more convenient ways to construct simple `VarNamedTuple`s through the `@vnt` macro, such as `@vnt(x := xval, y := yval)` and `@vnt(x, y)`.
