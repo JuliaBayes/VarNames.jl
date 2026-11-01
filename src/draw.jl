@@ -61,7 +61,7 @@ function Base.show(io::IO, ::MIME"text/plain", draw::Draw)
 end
 
 function Base.:(==)(left::VarNames.Draw, right::VarNames.Draw)
-    return parameters(left) == parameters(right) & extras(left) == extras(right)
+    return (parameters(left) == parameters(right)) & (extras(left) == extras(right))
 end
 
 function Base.isequal(left::VarNames.Draw, right::VarNames.Draw)
