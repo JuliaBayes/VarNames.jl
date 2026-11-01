@@ -80,6 +80,16 @@ using Test
 end
 
 @testset "base getvalue + hasvalue" begin
+    @testset "Tuple and Ref" begin
+        values = (tuple=((value=1,), (value=2,)), ref=Ref((value=3,)))
+        @test getvalue(values, @vn(tuple[end].value)) == 2
+        @test getvalue(values, @vn(tuple[1:2])) == values.tuple
+        @test !hasvalue(values, @vn(tuple[3]))
+        @test !hasvalue(values, @vn(tuple[1].missing))
+        @test getvalue(values, @vn(ref[].value)) == 3
+        @test !hasvalue(values, @vn(ref[1]))
+    end
+
     @testset "basic NamedTuple" begin
         nt = (a=[1], b=2, c=(x=3, y=[4], z=(; p=[(; q=5)])), d=[1.0 0.5; 0.5 1.0])
         @test hasvalue(nt, @vn(a))

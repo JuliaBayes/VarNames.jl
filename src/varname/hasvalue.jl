@@ -2,6 +2,7 @@
     canview(optic, container)
 
 Return `true` if `optic` can be used to view `container`, and `false` otherwise.
+For `Tuple` and `Ref` values, the supported indices follow their native `getindex` methods.
 
 # Examples
 ```jldoctest
@@ -29,7 +30,7 @@ function canview(optic::Index, x::AbstractArray)
         checkbounds(Bool, x, coptic.ix...) &&
             canview(coptic.child, getindex(x, coptic.ix...))
     else
-        _canview_fallback_kw(coptic, x)
+        _canview_fallback(coptic, x)
     end
 end
 # Handle some other edge cases.
@@ -45,14 +46,17 @@ function canview(optic::Index, x::NamedTuple)
            haskey(x, only(optic.ix)) &&
            canview(optic.child, x[only(optic.ix)])
 end
-# For cases where there are keyword arguments, we don't have much of a choice but to
-# try/catch. For example, this will be hit when using keyword arguments for DimArray.
-# However, there's no `checkbounds` method (yet):
+canview(optic::Index, x::Union{Tuple,Ref}) = _canview_fallback(optic, x)
+
+# Tuple/Ref and keyword indexing have no common bounds-checking interface, so use
+# their own getindex methods. This also covers keyword arguments for DimArray,
+# which has no `checkbounds` method (yet):
 # https://github.com/rafaqz/DimensionalData.jl/issues/1156
-function _canview_fallback_kw(optic::Index, x)
+function _canview_fallback(optic::Index, x)
     try
-        v = getindex(x, optic.ix...; optic.kw...)
-        return canview(optic.child, v)
+        coptic = concretize_top_level(optic, x)
+        v = getindex(x, coptic.ix...; coptic.kw...)
+        return canview(coptic.child, v)
     catch
         return false
     end
