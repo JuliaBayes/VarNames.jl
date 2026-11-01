@@ -4,6 +4,13 @@ using VarNames
 using DimensionalData: DimensionalData as DD
 using Test
 
+struct KeywordArray <: AbstractVector{Int}
+    data::Vector{Int}
+end
+Base.size(x::KeywordArray) = size(x.data)
+Base.getindex(x::KeywordArray, i::Int) = x.data[i]
+Base.getindex(x::KeywordArray; row) = x.data[row]
+
 @testset "canview" begin
     @testset "Vector" begin
         x = [1, 2, 3]
@@ -80,6 +87,13 @@ using Test
 end
 
 @testset "base getvalue + hasvalue" begin
+    @testset "Keyword indexing without keyword bounds" begin
+        values = (x=KeywordArray([1, 2]),)
+        @test hasvalue(values, @vn(x[row=1]))
+        @test getvalue(values, @vn(x[row=1])) == 1
+        @test !hasvalue(values, @vn(x[row=3]))
+    end
+
     @testset "basic NamedTuple" begin
         nt = (a=[1], b=2, c=(x=3, y=[4], z=(; p=[(; q=5)])), d=[1.0 0.5; 0.5 1.0])
         @test hasvalue(nt, @vn(a))
@@ -248,6 +262,10 @@ end
         @test canview(@opticof(_[i=1, j=2]), x.a)
         @test hasvalue(x, @vn(a[i=1, j=2]))
         @test getvalue(x, @vn(a[i=1, j=2])) == x.a[i=1, j=2]
+        @test hasvalue(x, @vn(a[i=1:2, j=:]))
+        @test getvalue(x, @vn(a[i=1:2, j=:])) == x.a[i=1:2, j=:]
+        @test !canview(@opticof(_[i=3, j=2]), x.a)
+        @test !hasvalue(x, @vn(a[i=3, j=2]))
         @test hasvalue(x, @vn(a[i=DD.Not(1)]))
         @test getvalue(x, @vn(a[i=DD.Not(1)])) == x.a[i=DD.Not(1)]
 

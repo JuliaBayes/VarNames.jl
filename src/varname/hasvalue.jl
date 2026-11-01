@@ -29,7 +29,7 @@ function canview(optic::Index, x::AbstractArray)
         checkbounds(Bool, x, coptic.ix...) &&
             canview(coptic.child, getindex(x, coptic.ix...))
     else
-        _canview_fallback_kw(coptic, x)
+        _canview_kw(coptic, x)
     end
 end
 # Handle some other edge cases.
@@ -45,10 +45,23 @@ function canview(optic::Index, x::NamedTuple)
            haskey(x, only(optic.ix)) &&
            canview(optic.child, x[only(optic.ix)])
 end
-# For cases where there are keyword arguments, we don't have much of a choice but to
-# try/catch. For example, this will be hit when using keyword arguments for DimArray.
-# However, there's no `checkbounds` method (yet):
-# https://github.com/rafaqz/DimensionalData.jl/issues/1156
+
+function _canview_kw(optic::Index, x)
+    # Nonstandard selectors can support getindex without supporting checkbounds.
+    if !isempty(optic.ix) ||
+       !all(i -> i isa Union{Integer,AbstractArray{<:Integer},Colon}, values(optic.kw)) ||
+       !applicable(Core.kwcall, optic.kw, checkbounds, Bool, x)
+        return _canview_fallback_kw(optic, x)
+    end
+    inbounds = try
+        checkbounds(Bool, x, optic.ix...; optic.kw...)
+    catch
+        # A bounds method may not support every selector.
+        return _canview_fallback_kw(optic, x)
+    end
+    return inbounds && _canview_fallback_kw(optic, x)
+end
+
 function _canview_fallback_kw(optic::Index, x)
     try
         v = getindex(x, optic.ix...; optic.kw...)
