@@ -1,3 +1,7 @@
+# 0.1.8
+
+Improve the performance of `hasvalue` and `getvalue` by deferring to `checkbounds` in more cases (specifically with keyword indices).
+
 # 0.1.7
 
 Fix a bug in `Base.:(==)` for `VarNames.Draw`.
