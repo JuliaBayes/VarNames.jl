@@ -46,7 +46,7 @@ function canview(optic::Index, x::NamedTuple)
            canview(optic.child, x[only(optic.ix)])
 end
 
-@inline function _canview_kw(optic::Index, x)
+function _canview_kw(optic::Index, x)
     # Nonstandard selectors can support getindex without supporting checkbounds.
     if !isempty(optic.ix) ||
        !all(i -> i isa Union{Integer,AbstractArray{<:Integer},Colon}, values(optic.kw)) ||
