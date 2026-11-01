@@ -6,6 +6,7 @@ using Test
     include("varname/varname.jl")
     include("varname/subsumes.jl")
     include("varname/hasvalue.jl")
+    include("varname/removevalue.jl")
     include("varname/leaves.jl")
     include("varname/serialize.jl")
     include("varnamedtuple.jl")
