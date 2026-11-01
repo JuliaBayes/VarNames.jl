@@ -112,11 +112,6 @@ function _haskey_optic(pa::PartialArray, optic::Index)
     end
 end
 function _haskey_optic(arr::AbstractArray, optic::IndexWithoutChild)
-    # Note that this call to `checkbounds` can error, although it is technically out of our
-    # hands: it depends on how the provider of the AbstractArray has implemented
-    # checkbounds. For example, DimArray can error here:
-    # https://github.com/rafaqz/DimensionalData.jl/issues/1156. But that is not our job to fix
-    # -- it should be done upstream -- hence we just forward the indices.
     return checkbounds(Bool, arr, optic.ix...; optic.kw...)
 end
 
