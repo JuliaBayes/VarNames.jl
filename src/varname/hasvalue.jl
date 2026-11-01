@@ -2,7 +2,8 @@
     canview(optic, container)
 
 Return `true` if `optic` can be used to view `container`, and `false` otherwise.
-For `Tuple` and `Ref` values, the supported indices follow their native `getindex` methods.
+Indexable containers follow their native `getindex` methods. Numbers and characters
+are treated as scalar values.
 
 # Examples
 ```jldoctest
@@ -47,7 +48,15 @@ function canview(optic::Index, x::NamedTuple)
            canview(optic.child, x[only(optic.ix)])
 end
 
-canview(optic::Index, x::Union{Tuple,Ref}) = _canview_fallback(optic, x)
+canview(optic::Index, x) = _canview_fallback(optic, x)
+# Scalar self-indexing does not introduce a nested variable.
+canview(::Index, ::Union{Number,AbstractChar}) = false
+
+# Native bounds suffice for leaf lookups, without an exception-handling fallback.
+function canview(optic::Index{Tuple{Int},<:NamedTuple{()},Iden}, x::Tuple)
+    return 1 <= only(optic.ix) <= length(x)
+end
+canview(::Index{Tuple{},<:NamedTuple{()},Iden}, x::Base.RefValue) = isassigned(x)
 
 @inline function _canview_kw(optic::Index, x)
     # Nonstandard selectors can support getindex without supporting checkbounds.
@@ -70,7 +79,8 @@ function _canview_fallback(optic::Index, x)
         coptic = concretize_top_level(optic, x)
         v = getindex(x, coptic.ix...; coptic.kw...)
         return canview(coptic.child, v)
-    catch
+    catch error
+        error isa InterruptException && rethrow()
         return false
     end
 end

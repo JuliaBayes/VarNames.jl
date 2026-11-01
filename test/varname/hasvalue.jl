@@ -11,6 +11,16 @@ Base.size(x::KeywordArray) = size(x.data)
 Base.getindex(x::KeywordArray, i::Int) = x.data[i]
 Base.getindex(x::KeywordArray; row) = x.data[row]
 
+struct IndexOnly{T}
+    data::T
+end
+Base.getindex(x::IndexOnly, indices...) = getindex(x.data, indices...)
+Base.getindex(x::IndexOnly; at) = x.data[at]
+Base.lastindex(x::IndexOnly) = lastindex(x.data)
+
+struct InterruptedIndex end
+Base.getindex(::InterruptedIndex, ::Int) = throw(InterruptException())
+
 @testset "canview" begin
     @testset "Vector" begin
         x = [1, 2, 3]
@@ -89,6 +99,8 @@ end
 @testset "base getvalue + hasvalue" begin
     @testset "Tuple and Ref" begin
         values = (tuple=((value=1,), (value=2,)), ref=Ref((value=3,)))
+        @test hasvalue(values, @vn(tuple[2]))
+        @test getvalue(values, @vn(tuple[2])) == (value=2,)
         @test hasvalue(values, @vn(tuple[end].value))
         @test getvalue(values, @vn(tuple[end].value)) == 2
         @test hasvalue(values, @vn(tuple[1:2]))
@@ -98,6 +110,20 @@ end
         @test hasvalue(values, @vn(ref[].value))
         @test getvalue(values, @vn(ref[].value)) == 3
         @test !hasvalue(values, @vn(ref[1]))
+        @test hasvalue(values, @vn(ref[]))
+        @test getvalue(values, @vn(ref[])) == (value=3,)
+        @test !hasvalue((ref=Ref{NamedTuple}(),), @vn(ref[]))
+    end
+
+    @testset "Generic indexing" begin
+        values = (x=IndexOnly(((value=1,), (value=2,))),)
+        for vn in (@vn(x[2].value), @vn(x[end].value), @vn(x[at=2].value))
+            @test hasvalue(values, vn)
+            @test getvalue(values, vn) == 2
+        end
+        @test !hasvalue(values, @vn(x[3]))
+        @test !hasvalue((x=:tag,), @vn(x[1]))
+        @test_throws InterruptException getvalue((x=InterruptedIndex(),), @vn(x[1]))
     end
 
     @testset "Keyword indexing without keyword bounds" begin
