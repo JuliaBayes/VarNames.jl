@@ -2,6 +2,8 @@
     canview(optic, container)
 
 Return `true` if `optic` can be used to view `container`, and `false` otherwise.
+Indexable containers follow their native `getindex` methods. Numbers and characters
+are treated as scalar values.
 
 # Examples
 ```jldoctest
@@ -46,27 +48,39 @@ function canview(optic::Index, x::NamedTuple)
            canview(optic.child, x[only(optic.ix)])
 end
 
+canview(optic::Index, x) = _canview_fallback(optic, x)
+# Scalar self-indexing does not introduce a nested variable.
+canview(::Index, ::Union{Number,AbstractChar}) = false
+
+# Native bounds suffice for leaf lookups, without an exception-handling fallback.
+function canview(optic::Index{Tuple{Int},<:NamedTuple{()},Iden}, x::Tuple)
+    return 1 <= only(optic.ix) <= length(x)
+end
+canview(::Index{Tuple{},<:NamedTuple{()},Iden}, x::Base.RefValue) = isassigned(x)
+
 function _canview_kw(optic::Index, x)
     # Nonstandard selectors can support getindex without supporting checkbounds.
     if !isempty(optic.ix) ||
        !all(i -> i isa Union{Integer,AbstractArray{<:Integer},Colon}, values(optic.kw)) ||
        !applicable(Core.kwcall, optic.kw, checkbounds, Bool, x)
-        return _canview_fallback_kw(optic, x)
+        return _canview_fallback(optic, x)
     end
     inbounds = try
         checkbounds(Bool, x, optic.ix...; optic.kw...)
     catch
         # A bounds method may not support every selector.
-        return _canview_fallback_kw(optic, x)
+        return _canview_fallback(optic, x)
     end
-    return inbounds && _canview_fallback_kw(optic, x)
+    return inbounds && _canview_fallback(optic, x)
 end
 
-function _canview_fallback_kw(optic::Index, x)
+function _canview_fallback(optic::Index, x)
     try
-        v = getindex(x, optic.ix...; optic.kw...)
-        return canview(optic.child, v)
-    catch
+        coptic = concretize_top_level(optic, x)
+        v = getindex(x, coptic.ix...; coptic.kw...)
+        return canview(coptic.child, v)
+    catch error
+        error isa InterruptException && rethrow()
         return false
     end
 end

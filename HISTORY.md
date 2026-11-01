@@ -1,5 +1,7 @@
 # 0.1.8
 
+Make `hasvalue` and `getvalue` work for `Tuple`s and `Ref`s.
+
 Improve the performance of `hasvalue` and `getvalue` by deferring to `checkbounds` in more cases (specifically with keyword indices).
 
 # 0.1.7
