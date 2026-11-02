@@ -6,6 +6,8 @@ using JET: @test_call
 
 @testset "varname/varname.jl" verbose = true begin
     @testset "basic construction (and type stability)" begin
+        @test VarName(:x) == @vn(x)
+        @test convert(VarName, :x) == @vn(x)
         @test @vn(x) == (@inferred VarName{:x}(Iden()))
         @test @vn(x[1]) == (@inferred VarName{:x}(Index((1,), (;), Iden())))
         @test @vn(x.a) == (@inferred VarName{:x}(Property{:a}(Iden())))
