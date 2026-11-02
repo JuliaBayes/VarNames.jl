@@ -4,6 +4,7 @@ include("varname/optic.jl")
 include("varname/varname.jl")
 include("varname/subsumes.jl")
 include("varname/hasvalue.jl")
+include("varname/removevalue.jl")
 include("varname/leaves.jl")
 include("varname/prefix.jl")
 include("varname/serialize.jl")
@@ -36,6 +37,7 @@ export AbstractOptic,
     unprefix,
     hasvalue,
     getvalue,
+    remove_value,
     canview,
     varname_leaves,
     varname_and_value_leaves,

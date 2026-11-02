@@ -251,6 +251,12 @@ hasvalue
 getvalue
 ```
 
+## Removing a named field from a container
+
+```@docs
+remove_value
+```
+
 ## Serializing VarNames
 
 ```@docs
