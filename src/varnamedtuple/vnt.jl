@@ -91,6 +91,7 @@ end
 
 Retrieve the value of `vn` stored in `vnt`.
 
+
 ```jldoctest
 julia> using VarNames
 
@@ -123,6 +124,18 @@ function Base.getindex(vnt::VarNamedTuple, vn::VarName)
     # should never be the return value of getindex. Thus, we automatically convert them to
     # dense arrays if needed.
     return unwrap_internal_array(result)
+end
+"""
+    Base.getindex(vnt::VarNamedTuple, sym::Symbol)
+
+`vnt[:x]` is a convenience method for `vnt[@vn(x)]`.
+
+!!! warning
+ 
+    This method is provided for convenience, but it is not type stable.
+"""
+function Base.getindex(vnt::VarNamedTuple, sym::Symbol)
+    return getindex(vnt, VarName{sym}())
 end
 
 """

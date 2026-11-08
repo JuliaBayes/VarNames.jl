@@ -1,3 +1,7 @@
+# 0.1.9
+
+Add the convenience method `getindex(::VarNamedTuple, ::Symbol)`.
+
 # 0.1.8
 
 Make `hasvalue` and `getvalue` work for `Tuple`s and `Ref`s.
