@@ -130,11 +130,14 @@ end
 
 `vnt[:x]` is a convenience method for `vnt[@vn(x)]`.
 
-!!! warning
+!!! warning "Type stability"
 
-    This method is provided for convenience, but it is not type stable.
+    This method is provided for convenience, but it is in general not type stable.
+    If you need to ensure type stability, use `vnt[@vn(x)]` instead.
 """
-function Base.getindex(vnt::VarNamedTuple, sym::Symbol)
+@inline function Base.getindex(vnt::VarNamedTuple, sym::Symbol)
+    # The `@inline` allows the compiler to propagate `sym`s that are known at compile-time
+    # through this function, which can sometimes make it type stable
     return getindex(vnt, VarName{sym}())
 end
 
