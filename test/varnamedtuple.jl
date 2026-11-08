@@ -381,6 +381,20 @@ Base.size(st::SizedThing) = st.size
         end
     end
 
+    @testset "getindex on symbols" begin
+        # this method is not type stable but should return the right thing
+        vnt = @vnt begin
+            x := 1.0
+            y := 2.0
+            z.a := 3.0
+            v := [1.0, 2.0, 3.0]
+        end
+        @test getindex(vnt, :x) == 1.0
+        @test getindex(vnt, :y) == 2.0
+        @test getindex(vnt, :z) == VarNamedTuple(a=3.0)
+        @test getindex(vnt, :v) == [1.0, 2.0, 3.0]
+    end
+
     @testset "KeyError for missing properties" begin
         vnt = @vnt begin
             x.a := 1.0

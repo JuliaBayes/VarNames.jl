@@ -126,6 +126,22 @@ function Base.getindex(vnt::VarNamedTuple, vn::VarName)
 end
 
 """
+    Base.getindex(vnt::VarNamedTuple, sym::Symbol)
+
+`vnt[:x]` is a convenience method for `vnt[@vn(x)]`.
+
+!!! warning "Type stability"
+
+    This method is provided for convenience, but it is in general not type stable.
+    If you need to ensure type stability, use `vnt[@vn(x)]` instead.
+"""
+@inline function Base.getindex(vnt::VarNamedTuple, sym::Symbol)
+    # The `@inline` allows the compiler to propagate `sym`s that are known at compile-time
+    # through this function, which can sometimes make it type stable
+    return getindex(vnt, VarName{sym}())
+end
+
+"""
     Base.view(vnt::VarNamedTuple, vn::VarName)
 
 Retrieve `vn` from `vnt`, using views for array slices where possible. Integer and Cartesian
