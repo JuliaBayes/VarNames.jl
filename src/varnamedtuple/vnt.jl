@@ -7,7 +7,7 @@ A `NamedTuple`-like structure with `VarName` keys.
 
 `VarNamedTuple` is a data structure for storing arbitrary data, keyed by `VarName`s, in an
 efficient and type stable manner. It is mainly used through `getindex`, `setindex!!`,
-`templated_setindex!!`, and `haskey`, all of which only accept `VarName`s as keys. Other
+`templated_setindex!!`, and `haskey`. `getindex` also accepts `Symbol` keys. Other
 notable methods are `merge` and `subset`.
 
 `VarNamedTuple` has an ordering to its elements, and two `VarNamedTuple`s with the same keys
