@@ -6,6 +6,7 @@ VarNamedTuple
 empty!!
 Base.isempty
 Base.getindex(::VarNamedTuple, ::VarName)
+Base.getindex(::VarNamedTuple, ::Symbol)
 Base.view(::VarNamedTuple, ::VarName)
 setindex!!
 apply!!

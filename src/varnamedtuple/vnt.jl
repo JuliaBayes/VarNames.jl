@@ -7,7 +7,7 @@ A `NamedTuple`-like structure with `VarName` keys.
 
 `VarNamedTuple` is a data structure for storing arbitrary data, keyed by `VarName`s, in an
 efficient and type stable manner. It is mainly used through `getindex`, `setindex!!`,
-`templated_setindex!!`, and `haskey`, all of which only accept `VarName`s as keys. Other
+`templated_setindex!!`, and `haskey`. `getindex` also accepts `Symbol` keys. Other
 notable methods are `merge` and `subset`.
 
 `VarNamedTuple` has an ordering to its elements, and two `VarNamedTuple`s with the same keys
@@ -123,6 +123,22 @@ function Base.getindex(vnt::VarNamedTuple, vn::VarName)
     # should never be the return value of getindex. Thus, we automatically convert them to
     # dense arrays if needed.
     return unwrap_internal_array(result)
+end
+
+"""
+    Base.getindex(vnt::VarNamedTuple, sym::Symbol)
+
+`vnt[:x]` is a convenience method for `vnt[@vn(x)]`.
+
+!!! warning "Type stability"
+
+    This method is provided for convenience, but it is in general not type stable.
+    If you need to ensure type stability, use `vnt[@vn(x)]` instead.
+"""
+@inline function Base.getindex(vnt::VarNamedTuple, sym::Symbol)
+    # The `@inline` allows the compiler to propagate `sym`s that are known at compile-time
+    # through this function, which can sometimes make it type stable
+    return getindex(vnt, VarName{sym}())
 end
 
 """
